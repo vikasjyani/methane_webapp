@@ -1,0 +1,33 @@
+{
+    "processing_start_time": "2025-05-23T05:48:51.494969",
+    "processing_end_time": "2025-05-23T05:58:13.502794",
+    "total_duration_seconds": 562.007825,
+    "system_config": {
+        "cpus_detected": 64,
+        "ram_gb_detected": 425.1144104003906,
+        "max_workers_setting": 64,
+        "chunk_size_setting": 100,
+        "max_grid_sample_setting": 10000000,
+        "forced_sequential": false
+    },
+    "file_processing_summary": {
+        "total_files_identified": 726,
+        "files_successfully_processed": 726,
+        "files_failed_processing": 0,
+        "success_rate_percent": 100.0
+    },
+    "data_summary": {
+        "total_districts_processed": 726,
+        "total_states_processed": 36,
+        "total_grid_points_in_successful_files": 6104147,
+        "total_grid_points_sampled_for_analysis": 6104147,
+        "avg_data_coverage_percent_district_level": 99.98902947414612
+    },
+    "output_files_info": {
+        "aggregated_data_folder": "aggregated_data",
+        "analytics_data_folder": "analytics_data",
+        "log_file": "preprocess_analytics.log",
+        "failed_tasks_file": "N/A",
+        "analytics_json_file": "analytics_data/comprehensive_methane_analytics.json"
+    }
+}

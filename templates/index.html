@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Methane Emissions Monitor - Enhanced Analytics Platform</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #00c853;
+            --danger-color: #ff5252;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #212529;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .app-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .map-container {
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            padding: 10px;
+        }
+
+        #map {
+            height: 70vh;
+            min-height: 500px;
+            border-radius: 12px;
+            background: #f0f0f0;
+        }
+
+        .controls-panel {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 300px;
+            max-height: calc(100% - 30px);
+            overflow-y: auto;
+        }
+
+        .breadcrumb-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .breadcrumb-nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+            color: var(--secondary-color);
+        }
+
+        .breadcrumb-nav .current {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .analytics-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs {
+            background: rgba(0, 0, 0, 0.03);
+            border-bottom: none;
+            padding: 12px 12px 0;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #495057;
+            font-weight: 500;
+            border-radius: 10px 10px 0 0;
+            margin-right: 4px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        .chart-container,
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            min-height: 320px;
+            /* Ensure space for content or loading spinners */
+        }
+
+        .chart-container>div,
+        .table-container>div {
+            /* For Plotly charts and table content */
+            min-height: 280px;
+            /* Adjust based on padding */
+        }
+
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            min-width: 200px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+
+        /* Enhanced Legend */
+        .legend {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            font-size: 12px;
+            min-width: 150px;
+        }
+
+        .legend h6 {
+            margin: 0 0 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .legend-gradient {
+            height: 20px;
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Enhanced Tooltips */
+        .leaflet-tooltip {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .leaflet-tooltip strong {
+            color: var(--primary-color);
+        }
+
+        /* Enhanced Popup */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 13px 19px;
+            font-size: 14px;
+        }
+
+        .methane-popup {
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .methane-popup h6 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .methane-popup .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .methane-popup .period {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .methane-popup .action {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: var(--info-color);
+        }
+
+        /* Form Controls */
+        .form-select-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            border-color: #ddd;
+        }
+
+        .form-select-sm:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: #212529;
+            /* Dark text for better contrast */
+        }
+
+        .btn-warning:hover {
+            background-color: #ffb300;
+            /* A slightly darker shade */
+            border-color: #ffb300;
+            color: #212529;
+        }
+
+        /* Table Styling */
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Debug Panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            max-width: 350px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .debug-panel pre {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            border-radius: 4px;
+            margin-top: 2px;
+            white-space: pre-wrap;
+            /* Ensure long lines wrap */
+            word-break: break-all;
+            /* Break long words/strings */
+        }
+
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .controls-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 15px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 2rem;
+            }
+
+            #map {
+                height: 50vh;
+                min-height: 400px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        .app-logo {
+            height: 40px;
+            /* Adjust the height as needed */
+            width: auto;
+            /* Maintain aspect ratio */
+            vertical-align: middle;
+            /* Helps align the image with the text */
+            margin-right: 5px;
+            /* Add some space between the logo and text */
+        }
+
+        #clear-cache-btn {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 10001;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5 id="loading-text">Loading methane data...</h5>
+        </div>
+    </div>
+
+    <div class="debug-panel" id="debug-panel" style="display: none;">
+        <button type="button" class="btn-close btn-close-white btn-sm float-end" onclick="toggleDebug(false)"></button>
+        <strong>Debug Log:</strong>
+        <hr class="my-1 border-secondary">
+        <div id="debug-content"></div>
+    </div>
+
+    <button id="clear-cache-btn" class="btn btn-warning btn-sm">
+        <i class="bi bi-trash"></i> Clear Server Cache
+    </button>
+
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">
+                <img src="{{ url_for('static', filename='Vasudha_Logo_PNG.png') }}" alt="Vasudha Foundation"
+                    class="app-logo"> India Methane Emissions
+                Monitor
+            </h1>
+            <p class="app-subtitle">Platform for Environmental Monitoring (2014-2023)</p>
+        </header>
+        <nav class="breadcrumb-nav" id="breadcrumb-nav">
+            <span class="current">🇮🇳 India</span>
+        </nav>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="controls-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0"><i class="bi bi-sliders"></i> Controls</h6>
+                    <button id="toggle-controls-btn" class="btn btn-sm btn-outline-secondary" title="Toggle Controls">
+                        <i class="bi bi-chevron-up"></i>
+                    </button>
+                </div>
+
+                <div id="controls-content">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Time Period</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <select id="year-select" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-6">
+                                <select id="month-select" class="form-select form-select-sm">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Navigation</label>
+                        <select id="state-nav-select" class="form-select form-select-sm mb-2">
+                            <option value="">-- Select State --</option>
+                        </select>
+                        <select id="district-nav-select" class="form-select form-select-sm" disabled>
+                            <option value="">-- Select District --</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="methane-layer-toggle" checked>
+                            <label class="form-check-label small" for="methane-layer-toggle">
+                                Show Methane Layer
+                            </label>
+                        </div>
+                        <!-- <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="heatmap-toggle">
+                            <label class="form-check-label small" for="heatmap-toggle">
+                                Use Heatmap Viz (India/State)
+                            </label>
+                        </div> -->
+                        <!-- <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="debug-toggle">
+                            <label class="form-check-label small" for="debug-toggle">
+                                Debug Mode
+                            </label>
+                        </div> -->
+                    </div>
+
+                    <button id="reset-view-btn" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset to India
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Current: <span id="current-level-display" class="fw-bold">India</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="analytics-container">
+            <ul class="nav nav-tabs" id="analytics-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"
+                        type="button">
+                        <i class="bi bi-graph-up"></i> Overview
+                    </button>
+                </li>
+                <!-- <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking"
+                        type="button">
+                        <i class="bi bi-trophy"></i> c
+                    </button>
+                </li> -->
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="timeseries-tab" data-bs-toggle="tab" data-bs-target="#timeseries"
+                        type="button" disabled>
+                        <i class="bi bi-calendar-range"></i> Time Series
+                    </button>
+                </li>
+                <!-- <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="correlation-tab" data-bs-toggle="tab" data-bs-target="#correlation"
+                        type="button" disabled>
+                        <i class="bi bi-diagram-3"></i> Correlations
+                    </button>
+                </li> -->
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="clustering-tab" data-bs-toggle="tab" data-bs-target="#clustering"
+                        type="button" disabled>
+                        <i class="bi bi-grid-3x3-gap"></i> Clustering
+                    </button>
+                </li>
+                <!-- <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="extremes-tab" data-bs-toggle="tab" data-bs-target="#extremes"
+                        type="button" disabled>
+                        <i class="bi bi-exclamation-triangle"></i> Extreme Events
+                    </button>
+                </li> -->
+            </ul>
+
+            <div class="tab-content" id="analytics-tab-content">
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <h5 id="overview-title" class="mb-3">Methane Emissions Overview</h5>
+                    <p id="overview-description" class="text-muted mb-4">
+                        Explore methane emission patterns across India. Click on regions to drill down for detailed
+                        analysis.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6 class="mb-3">Top Emitting Regions</h6>
+                                <div id="top-regions-chart"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6 class="mb-3">Analysis Summary</h6>
+                                <div id="current-analysis"></div>
+                                <div class="stats-grid">
+                                    <!-- <div class="stat-card">
+                <div class="stat-value text-primary" id="stat-average">--</div>
+                <div class="stat-label">Average (ppb)</div>
+            </div> -->
+                                    <div class="stat-card">
+                                        <div class="stat-value text-success" id="stat-min">--</div>
+                                        <div class="stat-label">Minimum (ppb)</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value text-danger" id="stat-max">--</div>
+                                        <div class="stat-label">Maximum (ppb)</div>
+                                    </div>
+                                    <!-- <div class="stat-card">
+                <div class="stat-value text-info" id="stat-median">--</div>
+                <div class="stat-label">Median (ppb)</div>
+            </div> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="ranking" role="tabpanel">
+                    <h5 class="mb-3">
+                        Emission Rankings for <span id="ranking-period-display" class="text-primary">Selected
+                            Period</span>
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="table-container" id="state-ranking-table-container">
+                                <h6><i class="bi bi-building"></i> State Rankings (<span id="state-rank-count">0</span>)
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover" id="state-ranking-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="60">Rank</th>
+                                                <th>State</th>
+                                                <th width="100">CH₄ (ppb)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-container" id="district-ranking-table-container">
+                                <h6><i class="bi bi-geo-alt"></i> District Rankings (<span
+                                        id="district-rank-count">0</span>)</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover" id="district-ranking-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="60">Rank</th>
+                                                <th>District</th>
+                                                <th>State</th>
+                                                <th width="100">CH₄ (ppb)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="timeseries" role="tabpanel">
+                    <h5 class="mb-3">Time Series Analysis: <span id="timeseries-location-display"
+                            class="text-primary">Location</span></h5>
+                    <div class="chart-container">
+                        <div id="timeseries-chart"></div>
+                        <div id="timeseries-stats" class="mt-3 text-muted small"></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="correlation" role="tabpanel">
+                    <h5 class="mb-3">District Correlations: <span id="correlation-location-display"
+                            class="text-primary">State</span></h5>
+                    <div class="table-container" id="correlation-table-container">
+                        <p class="text-muted small mb-3">Showing district pairs with strong correlations (|r| > 0.5)</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="correlation-table">
+                                <thead>
+                                    <tr>
+                                        <th>District 1</th>
+                                        <th>District 2</th>
+                                        <th>Correlation (r)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="clustering" role="tabpanel">
+                    <h5 class="mb-3">District Clustering: <span id="clustering-location-display"
+                            class="text-primary">State</span></h5>
+                    <div id="clustering-info" class="mb-3 text-muted"></div>
+                    <div class="table-container" id="clustering-table-container">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="clustering-table">
+                                <thead>
+                                    <tr>
+                                        <th>District</th>
+                                        <th>Cluster</th>
+                                        <th>Avg CH₄ (ppb)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="extremes" role="tabpanel">
+                    <h5 class="mb-3">Extreme Events: <span id="extremes-location-display"
+                            class="text-primary">Location</span></h5>
+                    <div id="extreme-events-summary" class="mb-3 text-muted"></div>
+                    <div class="table-container" id="extremes-table-container">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="extremes-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>CH₄ (ppb)</th>
+                                        <th>Z-Score</th>
+                                        <th>Type</th>
+                                        <th>Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let map, methaneLayer, currentLegend, heatLayer, pointMarkerLayer;
+        let currentLevel = 'india', currentState = null, currentDistrict = null;
+        let currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth() + 1;
+        let currentGeoJsonData = null, currentPointDataBundle = null, currentInterpolatedDataBundle = null;
+        let currentDataRange = { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+        let debugMode = false;
+        let colorScale;
+        let useHeatmapVizForAggregated = false; // For India/State level heatmap toggle
+
+        const API_BASE_URL = ''; // Adjust if your Flask app is hosted elsewhere
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+
+        // --- Utility Functions ---
+        function debugLog(message, data = null) {
+            if (debugMode) {
+                const timestamp = new Date().toLocaleTimeString();
+                const debugContent = $('#debug-content');
+                let html = `<div class="mb-1">[${timestamp}] ${message}</div>`;
+                if (data) {
+                    const dataStr = JSON.stringify(data, null, 2);
+                    const truncatedDataStr = dataStr.length > 1000 ? dataStr.substring(0, 1000) + "..." : dataStr;
+                    html += `<pre class="small mb-2">${truncatedDataStr}</pre>`;
+                }
+                debugContent.append(html);
+                if (debugContent.length) debugContent.scrollTop(debugContent[0].scrollHeight);
+            }
+            console.log(`[${new Date().toLocaleTimeString()}] ${message}`, data || '');
+        }
+
+
+        function toggleDebug(enabled) {
+            debugMode = enabled;
+            $('#debug-panel').toggle(enabled);
+            $('#debug-toggle').prop('checked', enabled);
+            debugLog(`Debug mode ${enabled ? 'ENABLED' : 'DISABLED'}`);
+        }
+
+        function setLoadingText(text) {
+            $('#loading-text').text(text);
+        }
+
+        function showLoading() {
+            $('#loading-overlay').fadeIn(150);
+        }
+
+        function hideLoading() {
+            $('#loading-overlay').fadeOut(200);
+        }
+
+        function showError(message, isCritical = false) {
+            debugLog('Error Displayed: ' + message, { critical: isCritical });
+            const alertId = `alert-${Date.now()}`;
+            const alertHtml = `
+                <div id="${alertId}" class="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                     style="z-index: 10001; max-width: 400px;" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('body').append(alertHtml);
+            if (!isCritical) {
+                setTimeout(() => $(`#${alertId}`).alert('close'), 5000);
+            }
+        }
+
+        function showSuccess(message) {
+            debugLog('Success Displayed: ' + message);
+            const alertId = `alert-success-${Date.now()}`;
+            const alertHtml = `
+                <div id="${alertId}" class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                     style="z-index: 10001; max-width: 400px;" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('body').append(alertHtml);
+            setTimeout(() => $(`#${alertId}`).alert('close'), 3000);
+        }
+
+        // --- Color Scale Functions ---
+        function initializeColorScale(min, max) {
+            min = parseFloat(min);
+            max = parseFloat(max);
+            if (isNaN(min)) min = 1700;
+            if (isNaN(max) || max <= min) max = min + 100;
+
+            colorScale = chroma.scale(['#00FF00', '#80FF00', '#FFFF00', '#FF8000', '#FF0000'])
+                .domain([min, max])
+                .mode('lab');
+            debugLog(`Color scale initialized: ${min.toFixed(1)} to ${max.toFixed(1)}`);
+        }
+
+        function getColorForValue(value, min, max) {
+            if (value === null || value === undefined || isNaN(value) || value <= 0) {
+                return '#E5E5E5'; // Gray for no data
+            }
+
+            min = isNaN(min) || min === null ? parseFloat(currentDataRange.data_min) : parseFloat(min);
+            max = isNaN(max) || max === null ? parseFloat(currentDataRange.data_max) : parseFloat(max);
+
+            if (min >= max) max = min + 100;
+
+            if (!colorScale || colorScale.domain()[0] !== min || colorScale.domain()[1] !== max) {
+                initializeColorScale(min, max);
+            }
+            return colorScale(value).hex();
+        }
+
+        // --- Map Initialization ---
+        function initializeMap() {
+            map = L.map('map', {
+                center: [22.5937, 78.9629], zoom: 5, minZoom: 4, maxZoom: 18, preferCanvas: true
+            });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://osm.org/copyright">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
+                subdomains: 'abcd', maxZoom: 20
+            }).addTo(map);
+            addLegend();
+            debugLog('Map initialized');
+        }
+
+        // --- Legend Management ---
+        function addLegend() {
+            if (currentLegend) map.removeControl(currentLegend);
+            currentLegend = L.control({ position: 'bottomright' });
+            currentLegend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'info legend');
+                updateLegendContent(div, currentDataRange.data_min, currentDataRange.data_max);
+                return div;
+            };
+            currentLegend.addTo(map);
+        }
+
+        function updateLegendContent(legendDiv, minVal, maxVal) {
+            minVal = (minVal === null || isNaN(minVal) || minVal <= 0) ? 1700 : parseFloat(minVal);
+            maxVal = (maxVal === null || isNaN(maxVal) || maxVal <= minVal) ? minVal + 100 : parseFloat(maxVal);
+
+            if (!colorScale || colorScale.domain()[0] !== minVal || colorScale.domain()[1] !== maxVal) {
+                initializeColorScale(minVal, maxVal);
+            }
+
+            const gradientStops = Array.from({ length: 11 }, (_, i) => {
+                const pct = i * 10;
+                const val = minVal + (maxVal - minVal) * (i / 10);
+                return `${colorScale(val).hex()} ${pct}%`;
+            });
+
+            legendDiv.innerHTML = `
+                <h6><i class="bi bi-droplet-half"></i> CH₄ (ppb)</h6>
+                <div class="legend-gradient" style="background: linear-gradient(to right, ${gradientStops.join(', ')});"></div>
+                <div class="legend-labels">
+                    <span>${minVal.toFixed(0)}</span>
+                    <span>${((minVal + maxVal) / 2).toFixed(0)}</span>
+                    <span>${maxVal.toFixed(0)}</span>
+                </div>`;
+            debugLog(`Legend updated: ${minVal.toFixed(0)} - ${maxVal.toFixed(0)} ppb`);
+        }
+
+        // --- Data Fetching ---
+        async function fetchData(endpoint, loadingMsg = "Loading data...") {
+            setLoadingText(loadingMsg);
+            showLoading();
+            debugLog(`Workspaceing: ${API_BASE_URL + endpoint}`);
+            try {
+                const response = await fetch(API_BASE_URL + endpoint);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorData;
+                    try { errorData = JSON.parse(errorText); } catch (e) { errorData = { error: errorText || `HTTP ${response.status}` }; }
+                    debugLog(`Workspace error response for ${endpoint}:`, errorData);
+                    throw new Error(errorData.error || `HTTP error ${response.status}`);
+                }
+                const data = await response.json();
+                debugLog(`Data received for ${endpoint}`, { keys: Object.keys(data).slice(0, 10), firstKeyData: data[Object.keys(data)[0]] });
+                return data;
+            } catch (error) {
+                debugLog(`Workspace exception for ${endpoint}`, error);
+                showError(`Failed to load data for ${endpoint.split('/').pop()}: ${error.message}`);
+                throw error;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Map Layer Management ---
+        function clearMapLayers() {
+            if (methaneLayer) { map.removeLayer(methaneLayer); methaneLayer = null; }
+            if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+            if (pointMarkerLayer) { map.removeLayer(pointMarkerLayer); pointMarkerLayer = null; }
+            debugLog('All map data layers cleared');
+        }
+
+        function updateMapLayers() {
+            clearMapLayers();
+            if (!$('#methane-layer-toggle').is(':checked')) {
+                debugLog('Methane layer toggled off, not rendering map data.');
+                return;
+            }
+
+            if (currentInterpolatedDataBundle && currentInterpolatedDataBundle.interpolated_grid_bundle) {
+                debugLog('Rendering map with currentInterpolatedDataBundle (heatmap style)');
+                renderInterpolatedContour(currentInterpolatedDataBundle.interpolated_grid_bundle);
+                if (currentInterpolatedDataBundle.original_points) {
+                    addMeasurementPoints(currentInterpolatedDataBundle.original_points, true);
+                }
+            } else if (currentLevel === 'district' && currentPointDataBundle) {
+                debugLog('Rendering district data on map (non-interpolated bundle path)', currentPointDataBundle);
+                renderDistrictData();
+            } else if (currentGeoJsonData && (currentLevel === 'india' || currentLevel === 'state')) {
+                debugLog('Rendering choropleth data on map', { level: currentLevel });
+                renderChoroplethData();
+            } else {
+                debugLog('No suitable data found to render on map.');
+            }
+        }
+
+
+        function renderChoroplethData() {
+            if (!currentGeoJsonData || !currentGeoJsonData.features) {
+                debugLog('No GeoJSON features to render for choropleth.'); return;
+            }
+            const { data_min, data_max } = currentDataRange;
+            methaneLayer = L.geoJSON(currentGeoJsonData, {
+                style: feature => ({
+                    fillColor: getColorForValue(feature.properties.methane_ppb, data_min, data_max),
+                    weight: 1, opacity: 1, color: 'white', fillOpacity: 0.8
+                }),
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties;
+                    const name = props.STATE || props.District_1 || 'N/A';
+                    const value = props.methane_ppb;
+                    const valueDisplay = (value !== null && value > 0) ? `${parseFloat(value).toFixed(1)} ppb` : 'No data';
+                    const popupContent = `<div class="methane-popup"><h6>${name}</h6><div class="value ${value > 0 ? getValueColorClass(value, data_min, data_max) : 'text-muted'}">${valueDisplay}</div><div class="period">${MONTH_NAMES[currentMonth - 1]} ${currentYear}</div>${(currentLevel === 'india' || currentLevel === 'state') && !useHeatmapVizForAggregated ? '<div class="action"><i class="bi bi-hand-index"></i> Click to explore</div>' : ''}</div>`;
+                    layer.bindPopup(popupContent);
+                    layer.bindTooltip(`<strong>${name}</strong><br>${valueDisplay}`, { sticky: true, className: 'custom-tooltip' });
+                    layer.on({
+                        mouseover: e => e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 }),
+                        mouseout: e => methaneLayer.resetStyle(e.target),
+                        click: e => {
+                            if (useHeatmapVizForAggregated && (currentLevel === 'india' || currentLevel === 'state')) return;
+                            if (currentLevel === 'india') loadStateView(props.STATE);
+                            else if (currentLevel === 'state') loadDistrictView(props.STATE, props.District_1);
+                        }
+                    });
+                }
+            }).addTo(map);
+            if (methaneLayer.getBounds().isValid()) map.fitBounds(methaneLayer.getBounds(), { padding: [30, 30] });
+        }
+
+        function renderDistrictData() {
+            const bundle = currentPointDataBundle;
+            if (!bundle) { debugLog('renderDistrictData called but currentPointDataBundle is null'); return; }
+            debugLog('Rendering district data', { type: bundle.type, pointsAvailable: bundle.points && bundle.points.length > 0 });
+
+            if (bundle.type === 'interpolated_contour' && bundle.interpolated_grid_bundle) {
+                renderInterpolatedContour(bundle.interpolated_grid_bundle);
+                if (bundle.original_points) addMeasurementPoints(bundle.original_points, true);
+            } else if (bundle.type === 'contour_points_only' && bundle.points && bundle.points.length > 0) {
+                createHeatmapFromPoints(bundle.points);
+                if (bundle.bounds) map.fitBounds([[bundle.bounds.min_lat, bundle.bounds.min_lon], [bundle.bounds.max_lat, bundle.bounds.max_lon]], { padding: [30, 30] });
+                addMeasurementPoints(bundle.points, true);
+            } else {
+                debugLog('District data type not suitable for direct rendering or no points.', bundle);
+                if (bundle.bounds) map.fitBounds([[bundle.bounds.min_lat, bundle.bounds.min_lon], [bundle.bounds.max_lat, bundle.bounds.max_lon]], { padding: [30, 30] });
+            }
+        }
+
+        function renderInterpolatedContour(interpolatedBundle) {
+            const { grid, lat_range, lon_range, value_range } = interpolatedBundle;
+            debugLog('Rendering interpolated contour (heatmap)', { gridSize: `${grid.length}x${grid[0].length}`, valueRange: value_range });
+            const heatPoints = [];
+            for (let i = 0; i < grid.length; i++) {
+                for (let j = 0; j < grid[0].length; j++) {
+                    const val = grid[i][j];
+                    if (val !== null && !isNaN(val) && val > 0) heatPoints.push([lat_range[i], lon_range[j], val]);
+                }
+            }
+            if (heatPoints.length > 0) {
+                const gradient = createHeatmapGradient(value_range.min, value_range.max);
+                heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 20, maxZoom: 18, max: value_range.max, gradient: gradient }).addTo(map);
+                const boundsToFit = interpolatedBundle.bounds || currentInterpolatedDataBundle?.bounds || currentPointDataBundle?.bounds;
+                if (boundsToFit) map.fitBounds([[boundsToFit.min_lat, boundsToFit.min_lon], [boundsToFit.max_lat, boundsToFit.max_lon]], { padding: [30, 30] });
+            } else {
+                debugLog('No heat points to render for interpolated contour.');
+            }
+        }
+
+        function createHeatmapFromPoints(points) {
+            const heatPoints = []; let minVal = Infinity, maxVal = -Infinity;
+            points.forEach(p => {
+                const [lat, lon, val] = p;
+                if (lat && lon && val && val > 0) {
+                    heatPoints.push([lat, lon, val]);
+                    minVal = Math.min(minVal, val); maxVal = Math.max(maxVal, val);
+                }
+            });
+            if (heatPoints.length > 0) {
+                const gradient = createHeatmapGradient(minVal, maxVal);
+                heatLayer = L.heatLayer(heatPoints, { radius: 20, blur: 15, maxZoom: 18, max: maxVal, gradient: gradient }).addTo(map);
+                debugLog(`Created heatmap from ${heatPoints.length} raw points.`);
+            } else {
+                debugLog('No points provided to createHeatmapFromPoints.');
+            }
+        }
+
+        function createHeatmapGradient(min, max) {
+            initializeColorScale(min, max); const gradient = {};
+            for (let i = 0; i <= 10; i++) {
+                const ratio = i / 10;
+                gradient[ratio] = colorScale(min + (max - min) * ratio).hex();
+            }
+            debugLog('Created heatmap gradient', gradient);
+            return gradient;
+        }
+
+        function addMeasurementPoints(points, showMarkers = true) {
+            if (!showMarkers || !points || points.length === 0) return;
+            if (pointMarkerLayer) map.removeLayer(pointMarkerLayer);
+            pointMarkerLayer = L.layerGroup();
+            let renderedCount = 0;
+            points.forEach(p => {
+                const [lat, lon, val] = p;
+                if (lat && lon && val && val > 0) {
+                    const color = getColorForValue(val, currentDataRange.data_min, currentDataRange.data_max);
+                    L.circleMarker([lat, lon], { radius: 4, fillColor: color, color: '#333', weight: 1, opacity: 1, fillOpacity: 0.8 })
+                        .bindTooltip(`<strong>${parseFloat(val).toFixed(1)} ppb</strong><br><small>(${parseFloat(lat).toFixed(4)}, ${parseFloat(lon).toFixed(4)})</small>`, { sticky: true })
+                        .addTo(pointMarkerLayer);
+                    renderedCount++;
+                }
+            });
+            if (renderedCount > 0) pointMarkerLayer.addTo(map);
+            debugLog(`Added ${renderedCount} measurement point markers.`);
+        }
+
+        function getValueColorClass(value, min, max) {
+            const normalized = (value - min) / (max - min);
+            if (normalized < 0.33) return 'text-success';
+            if (normalized < 0.67) return 'text-warning';
+            return 'text-danger';
+        }
+
+        // --- View Loading Functions ---
+        async function loadIndiaView() {
+            debugLog(`Loading India view: ${currentYear}-${currentMonth}, Heatmap viz: ${useHeatmapVizForAggregated}`);
+            currentLevel = 'india'; currentState = null; currentDistrict = null;
+            updateBreadcrumb(); updateCurrentLevelDisplay(); resetAnalyticsTabsToDefault('india'); resetNavigationSelects();
+            try {
+                const endpoint = useHeatmapVizForAggregated ? `/api/india/${currentYear}/${currentMonth}?viz=heatmap` : `/api/india/${currentYear}/${currentMonth}`;
+                const data = await fetchData(endpoint, `Loading India data for ${MONTH_NAMES[currentMonth - 1]} ${currentYear}...`);
+
+                currentGeoJsonData = null; currentPointDataBundle = null; currentInterpolatedDataBundle = null;
+                if (data.type === "interpolated_contour") {
+                    currentInterpolatedDataBundle = data;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else if (data.type === "choropleth") {
+                    currentGeoJsonData = data.geojson;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else {
+                    currentGeoJsonData = data.geojson;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                }
+
+                updateMapLayers(); updateStatistics(currentDataRange); updateOverviewPanel(data);
+                if (currentLegend && currentLegend.getContainer()) updateLegendContent(currentLegend.getContainer(), currentDataRange.data_min, currentDataRange.data_max);
+                showSuccess('India view loaded.');
+            } catch (error) {
+                currentGeoJsonData = null; currentInterpolatedDataBundle = null; updateMapLayers();
+                showError('Failed to load India data.');
+            }
+        }
+
+        async function loadStateView(stateName) {
+            debugLog(`Loading state view: ${stateName}, Year: ${currentYear}, Month: ${currentMonth}, Heatmap viz: ${useHeatmapVizForAggregated}`);
+            currentLevel = 'state'; currentState = stateName; currentDistrict = null;
+            updateBreadcrumb(); updateCurrentLevelDisplay(); resetAnalyticsTabsToDefault('state'); updateNavigationSelects();
+            try {
+                const endpoint = useHeatmapVizForAggregated ? `/api/state/${stateName}/${currentYear}/${currentMonth}?viz=heatmap` : `/api/state/${stateName}/${currentYear}/${currentMonth}`;
+                const data = await fetchData(endpoint, `Loading ${stateName} data for ${MONTH_NAMES[currentMonth - 1]} ${currentYear}...`);
+
+                currentGeoJsonData = null; currentPointDataBundle = null; currentInterpolatedDataBundle = null;
+                if (data.type === "interpolated_contour") {
+                    currentInterpolatedDataBundle = data;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else if (data.type === "choropleth") {
+                    currentGeoJsonData = data.geojson;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else {
+                    currentGeoJsonData = data.geojson;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                }
+
+                updateMapLayers(); updateStatistics(currentDataRange); updateOverviewPanel(data);
+                if (currentLegend && currentLegend.getContainer()) updateLegendContent(currentLegend.getContainer(), currentDataRange.data_min, currentDataRange.data_max);
+                loadDistrictsList(stateName);
+                showSuccess(`${stateName} view loaded.`);
+            } catch (error) {
+                currentGeoJsonData = null; currentInterpolatedDataBundle = null; updateMapLayers();
+                showError(`Failed to load ${stateName} data.`);
+            }
+        }
+
+        async function loadDistrictView(stateName, districtName) {
+            debugLog(`Loading district view: ${districtName}, ${stateName}, Year: ${currentYear}, Month: ${currentMonth}`);
+            currentLevel = 'district'; currentState = stateName; currentDistrict = districtName;
+            updateBreadcrumb(); updateCurrentLevelDisplay(); resetAnalyticsTabsToDefault('district'); updateNavigationSelects();
+            try {
+                const data = await fetchData(
+                    `/api/district/${stateName}/${districtName}/${currentYear}/${currentMonth}`,
+                    `Loading ${districtName} data...`
+                );
+                currentGeoJsonData = null;
+                currentInterpolatedDataBundle = null;
+                currentPointDataBundle = null;
+
+                if (data.type === 'interpolated_contour' && data.interpolated_grid_bundle) {
+                    currentInterpolatedDataBundle = data;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else if (data.type === 'contour_points_only' && data.points) {
+                    currentPointDataBundle = data;
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                } else {
+                    debugLog("District data received in unexpected format or empty.", data);
+                    currentDataRange = data.stats || { min: 1700, max: 2200, data_min: 1700, data_max: 2200 };
+                }
+
+                updateMapLayers(); updateStatistics(currentDataRange); updateOverviewPanel(data);
+                if (currentLegend && currentLegend.getContainer()) updateLegendContent(currentLegend.getContainer(), currentDataRange.data_min, currentDataRange.data_max);
+                showSuccess(`${districtName} view loaded.`);
+            } catch (error) {
+                currentPointDataBundle = null; currentInterpolatedDataBundle = null; updateMapLayers();
+                showError(`Failed to load ${districtName} data.`);
+            }
+        }
+
+        // --- UI Update Functions ---
+        function updateStatistics(stats) {
+            debugLog("Statistics updated", stats);
+            const format = val => (val !== null && !isNaN(val)) ? parseFloat(val).toFixed(1) : '--';
+            $('#stat-average').text(format(stats?.mean));
+            $('#stat-min').text(format(stats?.data_min ?? stats?.min));
+            $('#stat-max').text(format(stats?.data_max ?? stats?.max));
+            $('#stat-median').text(format(stats?.median));
+        }
+
+        function updateOverviewPanel(data) {
+            debugLog("Overview panel updated", data);
+            let title = `Methane Emissions Overview - ${MONTH_NAMES[currentMonth - 1]} ${currentYear}`;
+            let description = 'Explore emission patterns. Click areas for details.';
+            let topRegionsData = null;
+            let topRegionsLabel = "";
+
+            if (currentLevel === 'india') {
+                title = `India - ${title}`;
+                topRegionsData = data.top_states || data.top_regions_data;
+                topRegionsLabel = data.top_regions_label || 'Top 5 Emitting States';
+                if (topRegionsData && topRegionsData.length > 0) {
+                    updateTopRegionsChart(topRegionsData, topRegionsLabel);
+                } else { $('#top-regions-chart').html('<p class="text-center text-muted mt-5">No top regions data.</p>'); }
+            } else if (currentLevel === 'state') {
+                title = `${currentState} - District Emissions`;
+                description = `Analyzing district-level data for ${currentState}`;
+                topRegionsData = data.top_districts || data.top_regions_data;
+                topRegionsLabel = data.top_regions_label || `Top 5 Districts in ${currentState}`;
+                if (topRegionsData && topRegionsData.length > 0) {
+                    updateTopRegionsChart(topRegionsData, topRegionsLabel);
+                } else { $('#top-regions-chart').html('<p class="text-center text-muted mt-5">No top districts data.</p>'); }
+            } else if (currentLevel === 'district') {
+                title = `${currentDistrict}, ${currentState}`;
+                const pointCount = currentPointDataBundle?.points?.length || currentInterpolatedDataBundle?.original_points?.length || 0;
+                description = `High-resolution data. ${pointCount} data points analyzed.`;
+                if (pointCount > 0) {
+                    const values = (currentPointDataBundle?.points || currentInterpolatedDataBundle?.original_points)
+                        .map(p => p[2]).filter(v => v > 0);
+                    plotHistogram('top-regions-chart', values, `CH₄ Distribution in ${currentDistrict}`);
+                } else { $('#top-regions-chart').html('<p class="text-center text-muted mt-5">No distribution data.</p>'); }
+            }
+            $('#overview-title').text(title); $('#overview-description').text(description);
+            const analysisHtml = `<div class="text-center"><h6 class="text-primary mb-3">${currentYear} - ${MONTH_NAMES[currentMonth - 1]}</h6><hr><p class="mb-2"><strong>Level:</strong> ${currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1)}</p>${currentState ? `<p class="mb-2"><strong>State:</strong> ${currentState}</p>` : ''}${currentDistrict ? `<p class="mb-2"><strong>District:</strong> ${currentDistrict}</p>` : ''}${data.stats ? `<p class="mb-0"><strong>Data Points:</strong> ${data.stats.count || 'N/A'}</p>` : ''}</div>`;
+            $('#current-analysis').html(analysisHtml);
+        }
+
+        function updateTopRegionsChart(regionsData, chartTitle) {
+            if (!regionsData || regionsData.length === 0) {
+                $('#top-regions-chart').html('<p class="text-center text-muted mt-5">No data for top regions chart.</p>');
+                return;
+            }
+            const trace = {
+                x: regionsData.map(d => d.name), y: regionsData.map(d => d.methane_ppb), type: 'bar',
+                marker: { color: regionsData.map(d => getColorForValue(d.methane_ppb, Math.min(...regionsData.map(r => r.methane_ppb)), Math.max(...regionsData.map(r => r.methane_ppb)))) },
+                text: regionsData.map(d => parseFloat(d.methane_ppb).toFixed(1)), textposition: 'outside'
+            };
+            const layout = {
+                title: { text: chartTitle, font: { size: 16 } },
+                xaxis: { title: 'Region', tickangle: -45, automargin: true },
+                yaxis: { title: 'CH₄ (ppb)', automargin: true },
+                margin: { t: 50, l: 60, r: 30, b: 100 },
+                plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+            Plotly.newPlot('top-regions-chart', [trace], layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotHistogram(divId, values, title) {
+            if (!values || values.length === 0) {
+                $(`#${divId}`).html('<p class="text-center text-muted mt-5">Insufficient data for histogram.</p>'); return;
+            }
+            const trace = { x: values, type: 'histogram', marker: { color: 'rgba(102, 126, 234, 0.7)', line: { color: 'rgba(102, 126, 234, 1)', width: 1 } }, autobinx: true };
+            const layout = {
+                title: { text: title, font: { size: 16 } },
+                xaxis: { title: 'CH₄ (ppb)', automargin: true }, yaxis: { title: 'Frequency', automargin: true },
+                margin: { t: 50, l: 50, r: 30, b: 50 }, bargap: 0.05,
+                plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+            Plotly.newPlot(divId, [trace], layout, { responsive: true, displayModeBar: false });
+        }
+
+        function updateBreadcrumb() {
+            let html = `<a href="#" onclick="event.preventDefault(); resetToIndiaView();">🇮🇳 India</a>`;
+            if (currentLevel === 'state' || currentLevel === 'district') {
+                html += ` > `;
+                if (currentLevel === 'state') html += `<span class="current">🏛️ ${currentState}</span>`;
+                else {
+                    html += `<a href="#" onclick="event.preventDefault(); loadStateView('${currentState}');">🏛️ ${currentState}</a>`;
+                    html += ` > <span class="current">📍 ${currentDistrict}</span>`;
+                }
+            }
+            $('#breadcrumb-nav').html(html);
+        }
+
+        function updateCurrentLevelDisplay() {
+            let display = currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1);
+            if (currentState) display += ` - ${currentState}`;
+            if (currentDistrict) display += ` > ${currentDistrict}`;
+            $('#current-level-display').text(display);
+        }
+
+        function resetNavigationSelects() {
+            $('#state-nav-select').val('');
+            $('#district-nav-select').empty().append('<option value="">-- Select District --</option>').prop('disabled', true);
+        }
+
+        function updateNavigationSelects() {
+            if (currentState) $('#state-nav-select').val(currentState);
+            if (currentDistrict) $('#district-nav-select').val(currentDistrict);
+        }
+
+        async function loadDistrictsList(stateName) {
+            try {
+                const districts = await fetchData(`/api/districts_list/${stateName}`, 'Loading districts...');
+                const select = $('#district-nav-select').empty().append('<option value="">-- Select District --</option>');
+                if (districts && districts.length > 0) {
+                    districts.forEach(d => select.append(`<option value="${d}">${d}</option>`));
+                    select.prop('disabled', false);
+                } else { select.prop('disabled', true); }
+                if (currentDistrict) select.val(currentDistrict);
+            } catch (error) { /* fetchData handles error display */ }
+        }
+
+        // --- Analytics Functions ---
+        function resetAnalyticsTabsToDefault(level = 'india') {
+            debugLog(`Resetting analytics tabs for level: ${level}. CurrentState: ${currentState}, CurrentDistrict: ${currentDistrict}`);
+            const overviewTabButton = document.getElementById('overview-tab');
+            if (overviewTabButton) {
+                bootstrap.Tab.getInstance(overviewTabButton)?.show() || new bootstrap.Tab(overviewTabButton).show();
+            }
+
+            $('#timeseries-tab, #correlation-tab, #clustering-tab, #extremes-tab').prop('disabled', true)
+                .removeClass('active').attr('aria-selected', 'false');
+
+            if (level === 'state' && currentState) {
+                debugLog(`Enabling state-level analytics tabs for ${currentState}`);
+                $('#correlation-tab, #clustering-tab').prop('disabled', false);
+            } else if (level === 'district' && currentState && currentDistrict) {
+                debugLog(`Enabling district-level analytics tabs for ${currentDistrict}, ${currentState}`);
+                $('#timeseries-tab, #extremes-tab').prop('disabled', false);
+            }
+        }
+
+        async function loadRankingAnalysis() {
+            const stateTableContainer = $('#state-ranking-table-container');
+            const districtTableContainer = $('#district-ranking-table-container');
+            debugLog("Attempting to load ranking analysis.");
+
+            if (stateTableContainer.length === 0 || districtTableContainer.length === 0) {
+                showError("Ranking table containers not found.", true); return;
+            }
+            stateTableContainer.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading state rankings...</p></div>');
+            districtTableContainer.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading district rankings...</p></div>');
+
+            try {
+                const data = await fetchData(`/api/analytics/ranking/${currentYear}/${currentMonth}`, 'Loading ranking data...');
+                $('#ranking-period-display').text(data.period || `${MONTH_NAMES[currentMonth - 1]} ${currentYear}`);
+
+                stateTableContainer.html(`<h6><i class="bi bi-building"></i> State Rankings (<span id="state-rank-count">0</span>)</h6><div class="table-responsive"><table class="table table-sm table-hover" id="state-ranking-table"><thead><tr><th width="60">Rank</th><th>State</th><th width="100">CH₄ (ppb)</th></tr></thead><tbody></tbody></table></div>`);
+                const stateBody = $('#state-ranking-table tbody');
+                $('#state-rank-count').text(data.total_states_ranked || 0);
+                if (data.state_rankings?.length > 0) data.state_rankings.forEach(s => stateBody.append(`<tr><td><span class="badge bg-primary">${s.rank}</span></td><td>${s.state}</td><td class="text-end">${parseFloat(s.methane_ppb).toFixed(1)}</td></tr>`));
+                else stateBody.append('<tr><td colspan="3" class="text-center text-muted">No state ranking data</td></tr>');
+
+                districtTableContainer.html(`<h6><i class="bi bi-geo-alt"></i> District Rankings (<span id="district-rank-count">0</span>)</h6><div class="table-responsive"><table class="table table-sm table-hover" id="district-ranking-table"><thead><tr><th width="60">Rank</th><th>District</th><th>State</th><th width="100">CH₄ (ppb)</th></tr></thead><tbody></tbody></table></div>`);
+                const districtBody = $('#district-ranking-table tbody');
+                $('#district-rank-count').text(data.total_districts_ranked || 0);
+                if (data.district_rankings?.length > 0) data.district_rankings.forEach(d => districtBody.append(`<tr><td><span class="badge bg-info">${d.rank}</span></td><td>${d.district}</td><td>${d.state}</td><td class="text-end">${parseFloat(d.methane_ppb).toFixed(1)}</td></tr>`));
+                else districtBody.append('<tr><td colspan="4" class="text-center text-muted">No district ranking data</td></tr>');
+            } catch (error) {
+                stateTableContainer.html('<p class="text-danger text-center mt-3">Error loading state rankings.</p>');
+                districtTableContainer.html('<p class="text-danger text-center mt-3">Error loading district rankings.</p>');
+            }
+        }
+
+
+        async function loadTimeSeriesAnalysis(state, district) {
+            $('#timeseries-location-display').text(`${district}, ${state}`);
+            const chartDivId = 'timeseries-chart';
+            const chartDiv = $(`#${chartDivId}`);
+            debugLog(`Attempting to load time series for ${district}, ${state}. Target div: #${chartDivId}`);
+
+            if (chartDiv.length === 0) {
+                debugLog(`Critical Error: #${chartDivId} div NOT FOUND. Cannot plot.`);
+                showError(`Internal error: Time series chart container missing.`, true);
+                $('#timeseries').html('<p class="text-center text-danger mt-5">Chart container missing from page.</p>');
+                return;
+            }
+            chartDiv.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading chart...</p></div>');
+            $('#timeseries-stats').empty();
+
+            try {
+                const data = await fetchData(`/api/analytics/timeseries_data/${state}/${district}`, `Loading time series for ${district}...`);
+                debugLog(`Time series data received for ${district}, ${state}`, data);
+
+                if (!data || data.error || !data.time_series) {
+                    showError(data?.error || `No time series data found for ${district}.`);
+                    chartDiv.html(`<p class="text-center text-warning mt-5">${data?.error || 'No time series data available.'}</p>`);
+                    return;
+                }
+
+                if (data.time_series.length > 0) {
+                    const trace = {
+                        x: data.time_series.map(d => d.date), y: data.time_series.map(d => d.value),
+                        type: 'scatter', mode: 'lines+markers', name: 'CH₄ Levels',
+                        line: { color: 'var(--primary-color)', width: 2 }, marker: { size: 6, color: 'var(--primary-color)' }
+                    };
+                    const layout = {
+                        title: { text: `Methane Time Series - ${district}, ${state}`, font: { size: 16 } },
+                        xaxis: { title: 'Date', type: 'date', automargin: true }, yaxis: { title: 'CH₄ (ppb)', automargin: true },
+                        margin: { t: 50, l: 60, r: 30, b: 60 }, hovermode: 'x unified',
+                        plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)'
+                    };
+                    Plotly.newPlot(chartDivId, [trace], layout, { responsive: true, displayModeBar: false });
+
+                    const stats = data.statistics;
+                    const trendIndicator = stats.trend_slope > 0.01 ? '📈 Up' : (stats.trend_slope < -0.01 ? '📉 Down' : '➡️ Stable');
+                    const statsHtml = `<strong>Avg:</strong> ${parseFloat(stats.mean).toFixed(1)} | <strong>Std:</strong> ${parseFloat(stats.std).toFixed(1)} | <strong>Trend:</strong> ${trendIndicator} (${parseFloat(stats.trend_slope).toFixed(2)}) | <strong>Peak:</strong> ${MONTH_NAMES[(data.peak_month || 0) - 1] || 'N/A'}`;
+                    $('#timeseries-stats').html(statsHtml);
+                } else {
+                    chartDiv.html('<p class="text-center text-muted mt-5">No time series data points for this period.</p>');
+                }
+            } catch (error) {
+                debugLog(`Error in loadTimeSeriesAnalysis for ${district}, ${state}`, error);
+                showError(`Failed to load time series: ${error.message}`);
+                chartDiv.html('<p class="text-center text-danger mt-5">Error loading time series data.</p>');
+            }
+        }
+
+        async function loadCorrelationAnalysis(state) {
+            $('#correlation-location-display').text(state);
+            const tableContainer = $('#correlation-table-container');
+            debugLog(`Attempting to load correlations for ${state}.`);
+
+            if (tableContainer.length === 0) {
+                showError("Correlation table container not found.", true); return;
+            }
+            tableContainer.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading correlations...</p></div>');
+
+            try {
+                const data = await fetchData(`/api/analytics/correlation_data/${state}`, `Loading correlations for ${state}...`);
+                tableContainer.html(`<p class="text-muted small mb-3">Showing district pairs with strong correlations (|r| > 0.5)</p><div class="table-responsive"><table class="table table-sm table-hover" id="correlation-table"><thead><tr><th>District 1</th><th>District 2</th><th>Correlation (r)</th></tr></thead><tbody></tbody></table></div>`);
+                const tableBody = $('#correlation-table tbody');
+
+                if (!data || data.error || !data.correlations) {
+                    showError(data?.error || `No correlation data found for ${state}.`);
+                    tableBody.html(`<tr><td colspan="3" class="text-center text-warning">${data?.error || 'No correlation data available.'}</td></tr>`);
+                    return;
+                }
+                if (data.correlations.length > 0) {
+                    const strongCorrelations = data.correlations
+                        .filter(c => c.district1 !== c.district2 && Math.abs(c.correlation) > 0.5)
+                        .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation)).slice(0, 50);
+                    if (strongCorrelations.length > 0) strongCorrelations.forEach(c => tableBody.append(`<tr><td>${c.district1}</td><td>${c.district2}</td><td class="${c.correlation > 0 ? 'text-success' : 'text-danger'} text-end">${parseFloat(c.correlation).toFixed(3)}</td></tr>`));
+                    else tableBody.append('<tr><td colspan="3" class="text-center text-muted">No strong correlations found.</td></tr>');
+                } else tableBody.append('<tr><td colspan="3" class="text-center text-muted">No correlation data.</td></tr>');
+            } catch (error) {
+                showError(`Failed to load correlations: ${error.message}`);
+                $('#correlation-table-container').html('<p class="text-danger text-center mt-3">Error loading correlations.</p>');
+            }
+        }
+
+        async function loadClusteringAnalysis(state) {
+            $('#clustering-location-display').text(state);
+            const tableContainer = $('#clustering-table-container');
+            const clusteringInfoDiv = $('#clustering-info');
+            debugLog(`Attempting to load clustering for ${state}.`);
+
+            if (tableContainer.length === 0) {
+                showError("Clustering table container not found.", true); return;
+            }
+            tableContainer.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading clustering data...</p></div>');
+            clusteringInfoDiv.html('Loading analysis info...');
+
+            try {
+                const data = await fetchData(`/api/analytics/clustering_data/${state}`, `Loading clustering for ${state}...`);
+                tableContainer.html(`<div class="table-responsive"><table class="table table-sm table-hover" id="clustering-table"><thead><tr><th>District</th><th>Cluster</th><th>Avg CH₄ (ppb)</th></tr></thead><tbody></tbody></table></div>`);
+                const tableBody = $('#clustering-table tbody');
+
+                if (!data || data.error || !data.district_clusters) {
+                    showError(data?.error || `No clustering data for ${state}.`);
+                    tableBody.html(`<tr><td colspan="3" class="text-center text-warning">${data?.error || 'No clustering data available.'}</td></tr>`);
+                    clusteringInfoDiv.html(`<span class="text-warning">${data?.error || 'Analysis info unavailable.'}</span>`);
+                    return;
+                }
+                if (data.district_clusters.length > 0) {
+                    clusteringInfoDiv.html(`Districts grouped into <strong>${data.n_clusters}</strong> clusters. Inertia: ${parseFloat(data.inertia).toFixed(2)}`);
+                    const sorted = data.district_clusters.sort((a, b) => (a.cluster !== b.cluster) ? a.cluster - b.cluster : b.average_methane - a.average_methane);
+                    sorted.forEach(dc => tableBody.append(`<tr><td>${dc.district}</td><td><span class="badge bg-secondary">Cluster ${dc.cluster}</span></td><td class="text-end">${parseFloat(dc.average_methane).toFixed(1)}</td></tr>`));
+                } else {
+                    tableBody.append('<tr><td colspan="3" class="text-center text-muted">No clustering data.</td></tr>');
+                    clusteringInfoDiv.html('No clustering data to analyze.');
+                }
+            } catch (error) {
+                showError(`Failed to load clustering: ${error.message}`);
+                $('#clustering-table-container').html('<p class="text-danger text-center mt-3">Error loading clustering.</p>');
+                clusteringInfoDiv.html('<span class="text-danger">Error loading info.</span>');
+            }
+        }
+
+        async function loadExtremeEventsAnalysis(state, district) {
+            $('#extremes-location-display').text(`${district}, ${state}`);
+            const tableContainer = $('#extremes-table-container');
+            const summaryDiv = $('#extreme-events-summary');
+            debugLog(`Attempting to load extreme events for ${district}, ${state}.`);
+
+            if (tableContainer.length === 0) {
+                showError("Extreme events table container not found.", true); return;
+            }
+            tableContainer.html('<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p>Loading extreme events...</p></div>');
+            summaryDiv.html('Loading summary...');
+
+            try {
+                const data = await fetchData(`/api/analytics/extreme_events_data/${state}/${district}`, `Loading extreme events for ${district}...`);
+                tableContainer.html(`<div class="table-responsive"><table class="table table-sm table-hover" id="extremes-table"><thead><tr><th>Date</th><th>CH₄ (ppb)</th><th>Z-Score</th><th>Type</th><th>Severity</th></tr></thead><tbody></tbody></table></div>`);
+                const tableBody = $('#extremes-table tbody');
+
+                if (!data || data.error || !data.extreme_events) {
+                    showError(data?.error || `No extreme events data for ${district}.`);
+                    tableBody.html(`<tr><td colspan="5" class="text-center text-warning">${data?.error || 'No extreme events data.'}</td></tr>`);
+                    summaryDiv.html(`<span class="text-warning">${data?.error || 'Summary unavailable.'}</span>`);
+                    return;
+                }
+                if (data.extreme_events.length > 0) {
+                    const stats = data.statistics;
+                    summaryDiv.html(`<strong>Summary:</strong> ${stats.total_events} events (${stats.high_events} high, ${stats.low_events} low, ${stats.severe_events} severe). Period: ${data.data_period?.start_date || 'N/A'} to ${data.data_period?.end_date || 'N/A'}`);
+                    data.extreme_events.forEach(evt => {
+                        const typeClass = evt.event_type === 'high_extreme' ? 'text-danger' : 'text-primary';
+                        const sevBadge = evt.severity === 'severe' ? 'bg-danger' : (evt.severity === 'moderate' ? 'bg-warning text-dark' : 'bg-info');
+                        tableBody.append(`<tr><td>${evt.date}</td><td class="text-end">${parseFloat(evt.methane_ppb).toFixed(1)}</td><td class="text-end">${parseFloat(evt.z_score).toFixed(2)}</td><td class="${typeClass}">${evt.event_type.replace('_', ' ')}</td><td><span class="badge ${sevBadge}">${evt.severity}</span></td></tr>`);
+                    });
+                } else {
+                    tableBody.append('<tr><td colspan="5" class="text-center text-muted">No extreme events detected.</td></tr>');
+                    summaryDiv.html('No extreme events detected.');
+                }
+            } catch (error) {
+                showError(`Failed to load extreme events: ${error.message}`);
+                $('#extremes-table-container').html('<p class="text-danger text-center mt-3">Error loading extreme events.</p>');
+                summaryDiv.html('<span class="text-danger">Error loading summary.</span>');
+            }
+        }
+
+
+        // --- Event Handlers ---
+        function setupEventListeners() {
+            $('#year-select, #month-select').change(function () {
+                currentYear = parseInt($('#year-select').val()); currentMonth = parseInt($('#month-select').val());
+                debugLog(`Time changed. Year: ${currentYear}, Month: ${currentMonth}. Updating view.`);
+                updateCurrentView();
+            });
+            $('#state-nav-select').change(async function () {
+                const selectedState = $(this).val();
+                if (selectedState) { debugLog(`State nav: ${selectedState}`); loadStateView(selectedState); }
+                else { debugLog(`State nav cleared.`); resetToIndiaView(); }
+            });
+            $('#district-nav-select').change(function () {
+                const selectedDistrict = $(this).val();
+                if (selectedDistrict && currentState) { debugLog(`District nav: ${selectedDistrict}`); loadDistrictView(currentState, selectedDistrict); }
+                else if (currentState) { debugLog(`District nav cleared for ${currentState}.`); loadStateView(currentState); }
+            });
+            $('#methane-layer-toggle').change(updateMapLayers);
+            $('#heatmap-toggle').change(function () {
+                useHeatmapVizForAggregated = $(this).is(':checked');
+                debugLog(`Heatmap viz for India/State set to: ${useHeatmapVizForAggregated}. Reloading current view.`);
+                updateCurrentView();
+            });
+            $('#debug-toggle').change(function () { toggleDebug($(this).is(':checked')); });
+            $('#reset-view-btn').click(resetToIndiaView);
+            $('#toggle-controls-btn').click(function () {
+                $('#controls-content').slideToggle(200, () => $(this).find('i').toggleClass('bi-chevron-up bi-chevron-down'));
+            });
+
+            $('#analytics-tabs button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                const tabButtonId = $(e.target).attr('id');
+                const targetPaneId = $(e.target).attr('data-bs-target');
+                debugLog(`Analytics tab shown: ${tabButtonId}, target pane: ${targetPaneId}.`);
+                setTimeout(() => {
+                    if ($(targetPaneId).is(':visible')) {
+                        debugLog(`Pane ${targetPaneId} is visible. Calling handleAnalyticsTabChange for ${tabButtonId}.`);
+                        handleAnalyticsTabChange(tabButtonId);
+                    } else { debugLog(`Pane ${targetPaneId} is NOT visible after timeout. Tab change issue.`); }
+                }, 150);
+            });
+
+            // Add the Clear Cache button listener
+            $('#clear-cache-btn').click(function () {
+                if (!confirm('Are you sure you want to clear the server cache? This will reload all data and may take some time.')) {
+                    return;
+                }
+                showLoading();
+                setLoadingText('Clearing server cache...');
+                $.ajax({
+                    url: API_BASE_URL + '/api/clear_cache',
+                    type: 'POST',
+                    success: function (response) {
+                        hideLoading();
+                        showSuccess(response.message || 'Cache cleared successfully. Reloading view...');
+                        // Reload the current view to reflect potentially new data
+                        updateCurrentView();
+                    },
+                    error: function (xhr) {
+                        hideLoading();
+                        const errorMsg = xhr.responseJSON?.message || 'Failed to clear cache.';
+                        showError('Cache Clear Error: ' + errorMsg);
+                    }
+                });
+            });
+        }
+
+
+        function handleAnalyticsTabChange(tabButtonId) {
+            debugLog(`Handling analytics tab change for: ${tabButtonId}. Level: ${currentLevel}, State: ${currentState}, District: ${currentDistrict}`);
+            switch (tabButtonId) {
+                case 'ranking-tab': loadRankingAnalysis(); break;
+                case 'timeseries-tab': if (currentState && currentDistrict) loadTimeSeriesAnalysis(currentState, currentDistrict); else debugLog("Skipping timeseries: no district selected."); break;
+                case 'correlation-tab': if (currentState) loadCorrelationAnalysis(currentState); else debugLog("Skipping correlation: no state selected."); break;
+                case 'clustering-tab': if (currentState) loadClusteringAnalysis(currentState); else debugLog("Skipping clustering: no state selected."); break;
+                case 'extremes-tab': if (currentState && currentDistrict) loadExtremeEventsAnalysis(currentState, currentDistrict); else debugLog("Skipping extremes: no district selected."); break;
+            }
+        }
+
+        function resetToIndiaView() {
+            currentLevel = 'india'; currentState = null; currentDistrict = null;
+            $('#heatmap-toggle').prop('checked', false);
+            useHeatmapVizForAggregated = false;
+            loadIndiaView();
+        }
+
+        function updateCurrentView() {
+            debugLog(`Updating current view. Level: ${currentLevel}, State: ${currentState}, District: ${currentDistrict}`);
+            switch (currentLevel) {
+                case 'india': loadIndiaView(); break;
+                case 'state': if (currentState) loadStateView(currentState); break;
+                case 'district': if (currentState && currentDistrict) loadDistrictView(currentState, currentDistrict); break;
+                default: debugLog("Unknown currentLevel in updateCurrentView:", currentLevel); resetToIndiaView(); break;
+            }
+        }
+
+        // --- Initialization ---
+        async function initializeApp() {
+            setLoadingText('Initializing application...'); showLoading();
+            try {
+                initializeMap();
+                const metadata = await fetchData('/api/metadata', 'Loading application metadata...');
+                const yearSelect = $('#year-select').empty();
+                if (metadata.years && metadata.years.length > 0) {
+                    metadata.years.sort((a, b) => b - a).forEach(year => yearSelect.append(`<option value="${year}">${year}</option>`));
+                    currentYear = metadata.min_year || metadata.years[0];
+                } else { currentYear = new Date().getFullYear(); yearSelect.append(`<option value="${currentYear}">${currentYear}</option>`); }
+                yearSelect.val(currentYear); $('#month-select').val(currentMonth);
+                const stateSelect = $('#state-nav-select');
+                if (metadata.all_states_list && metadata.all_states_list.length > 0) {
+                    metadata.all_states_list.forEach(state => stateSelect.append(`<option value="${state}">${state}</option>`));
+                }
+                setupEventListeners();
+                await loadIndiaView();
+                debugLog('Application initialized successfully', metadata);
+            } catch (error) {
+                showError('Failed to initialize application: ' + error.message, true);
+            } finally {
+                hideLoading();
+            }
+        }
+        $(document).ready(initializeApp);
+    </script>
+</body>
+
+</html>

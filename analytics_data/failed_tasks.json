@@ -1,0 +1,302 @@
+[
+  {
+    "state": "PUDUCHERRY",
+    "district": "MAHE",
+    "file_path": "data\\PUDUCHERRY\\MAHE.xlsx",
+    "size": 24692
+  },
+  {
+    "state": "DELHI",
+    "district": "EAST",
+    "file_path": "data\\DELHI\\EAST.xlsx",
+    "size": 66883
+  },
+  {
+    "state": "PUDUCHERRY",
+    "district": "YANAM",
+    "file_path": "data\\PUDUCHERRY\\YANAM.xlsx",
+    "size": 70511
+  },
+  {
+    "state": "DELHI",
+    "district": "SHAHADRA",
+    "file_path": "data\\DELHI\\SHAHADRA.xlsx",
+    "size": 77511
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "LUCKNOW",
+    "file_path": "data\\UTTAR PRADESH\\LUCKNOW.xlsx",
+    "size": 78622
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MAU",
+    "file_path": "data\\UTTAR PRADESH\\MAU.xlsx",
+    "size": 85007
+  },
+  {
+    "state": "DELHI",
+    "district": "NORTH EAST",
+    "file_path": "data\\DELHI\\NORTH EAST.xlsx",
+    "size": 88858
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MUZAFFARNAGAR",
+    "file_path": "data\\UTTAR PRADESH\\MUZAFFARNAGAR.xlsx",
+    "size": 90377
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MORADABAD",
+    "file_path": "data\\UTTAR PRADESH\\MORADABAD.xlsx",
+    "size": 92334
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "VELLORE",
+    "file_path": "data\\TAMIL NADU\\VELLORE.xlsx",
+    "size": 93899
+  },
+  {
+    "state": "DADRA NAGAR HAVELI DAMAN DIU",
+    "district": "DAMAN",
+    "file_path": "data\\DADRA NAGAR HAVELI DAMAN DIU\\DAMAN.xlsx",
+    "size": 94089
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "TIRUPPATTUR",
+    "file_path": "data\\TAMIL NADU\\TIRUPPATTUR.xlsx",
+    "size": 104060
+  },
+  {
+    "state": "MAHARASHTRA",
+    "district": "MUMBAI CITY",
+    "file_path": "data\\MAHARASHTRA\\MUMBAI CITY.xlsx",
+    "size": 104244
+  },
+  {
+    "state": "TELANGANA",
+    "district": "MEDAK",
+    "file_path": "data\\TELANGANA\\MEDAK.xlsx",
+    "size": 111407
+  },
+  {
+    "state": "DADRA NAGAR HAVELI DAMAN DIU",
+    "district": "DIU",
+    "file_path": "data\\DADRA NAGAR HAVELI DAMAN DIU\\DIU.xlsx",
+    "size": 116175
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "VIRUDHUNAGAR",
+    "file_path": "data\\TAMIL NADU\\VIRUDHUNAGAR.xlsx",
+    "size": 130079
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MAINPURI",
+    "file_path": "data\\UTTAR PRADESH\\MAINPURI.xlsx",
+    "size": 133888
+  },
+  {
+    "state": "CHANDIGARH",
+    "district": "CHANDIGARH",
+    "file_path": "data\\CHANDIGARH\\CHANDIGARH.xlsx",
+    "size": 142763
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "PRATAPGARH",
+    "file_path": "data\\UTTAR PRADESH\\PRATAPGARH.xlsx",
+    "size": 143293
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MAHOBA",
+    "file_path": "data\\UTTAR PRADESH\\MAHOBA.xlsx",
+    "size": 163669
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "VILLUPURAM",
+    "file_path": "data\\TAMIL NADU\\VILLUPURAM.xlsx",
+    "size": 175990
+  },
+  {
+    "state": "DELHI",
+    "district": "SOUTH EAST",
+    "file_path": "data\\DELHI\\SOUTH EAST.xlsx",
+    "size": 179077
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MATHURA",
+    "file_path": "data\\UTTAR PRADESH\\MATHURA.xlsx",
+    "size": 181551
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "PILIBHIT",
+    "file_path": "data\\UTTAR PRADESH\\PILIBHIT.xlsx",
+    "size": 184848
+  },
+  {
+    "state": "PUDUCHERRY",
+    "district": "KARAIKAL",
+    "file_path": "data\\PUDUCHERRY\\KARAIKAL.xlsx",
+    "size": 195583
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "KRISHNAGIRI",
+    "file_path": "data\\TAMIL NADU\\KRISHNAGIRI.xlsx",
+    "size": 216327
+  },
+  {
+    "state": "TELANGANA",
+    "district": "HYDERABAD",
+    "file_path": "data\\TELANGANA\\HYDERABAD.xlsx",
+    "size": 231265
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "TIRUVANNAMALAI",
+    "file_path": "data\\TAMIL NADU\\TIRUVANNAMALAI.xlsx",
+    "size": 231289
+  },
+  {
+    "state": "DELHI",
+    "district": "SOUTH",
+    "file_path": "data\\DELHI\\SOUTH.xlsx",
+    "size": 235767
+  },
+  {
+    "state": "DELHI",
+    "district": "CENTRAL",
+    "file_path": "data\\DELHI\\CENTRAL.xlsx",
+    "size": 241564
+  },
+  {
+    "state": "UTTAR PRADESH",
+    "district": "MIRZAPUR",
+    "file_path": "data\\UTTAR PRADESH\\MIRZAPUR.xlsx",
+    "size": 244491
+  },
+  {
+    "state": "WEST BENGAL",
+    "district": "KOLKATA",
+    "file_path": "data\\WEST BENGAL\\KOLKATA.xlsx",
+    "size": 257490
+  },
+  {
+    "state": "DELHI",
+    "district": "NEW DELHI",
+    "file_path": "data\\DELHI\\NEW DELHI.xlsx",
+    "size": 280912
+  },
+  {
+    "state": "DELHI",
+    "district": "NORTH WEST",
+    "file_path": "data\\DELHI\\NORTH WEST.xlsx",
+    "size": 308048
+  },
+  {
+    "state": "TAMIL NADU",
+    "district": "CHENNAI",
+    "file_path": "data\\TAMIL NADU\\CHENNAI.xlsx",
+    "size": 378530
+  },
+  {
+    "state": "JAMMU AND KASHMIR",
+    "district": "SRINAGAR",
+    "file_path": "data\\JAMMU AND KASHMIR\\SRINAGAR.xlsx",
+    "size": 417836
+  },
+  {
+    "state": "MANIPUR",
+    "district": "KAKCHING",
+    "file_path": "data\\MANIPUR\\KAKCHING.xlsx",
+    "size": 418872
+  },
+  {
+    "state": "MANIPUR",
+    "district": "THOUBAL",
+    "file_path": "data\\MANIPUR\\THOUBAL.xlsx",
+    "size": 431095
+  },
+  {
+    "state": "DELHI",
+    "district": "SOUTH WEST",
+    "file_path": "data\\DELHI\\SOUTH WEST.xlsx",
+    "size": 432656
+  },
+  {
+    "state": "MANIPUR",
+    "district": "JIRIBAM",
+    "file_path": "data\\MANIPUR\\JIRIBAM.xlsx",
+    "size": 444887
+  },
+  {
+    "state": "MAHARASHTRA",
+    "district": "SUB URBAN MUMBAI",
+    "file_path": "data\\MAHARASHTRA\\SUB URBAN MUMBAI.xlsx",
+    "size": 448694
+  },
+  {
+    "state": "DELHI",
+    "district": "NORTH",
+    "file_path": "data\\DELHI\\NORTH.xlsx",
+    "size": 459311
+  },
+  {
+    "state": "PUDUCHERRY",
+    "district": "PUDUCHERRY",
+    "file_path": "data\\PUDUCHERRY\\PUDUCHERRY.xlsx",
+    "size": 520902
+  },
+  {
+    "state": "BIHAR",
+    "district": "SHEOHAR",
+    "file_path": "data\\BIHAR\\SHEOHAR.xlsx",
+    "size": 541999
+  },
+  {
+    "state": "MANIPUR",
+    "district": "BISHNUPUR",
+    "file_path": "data\\MANIPUR\\BISHNUPUR.xlsx",
+    "size": 549297
+  },
+  {
+    "state": "MANIPUR",
+    "district": "IMPHAL EAST",
+    "file_path": "data\\MANIPUR\\IMPHAL EAST.xlsx",
+    "size": 568526
+  },
+  {
+    "state": "DADRA NAGAR HAVELI DAMAN DIU",
+    "district": "DADRA & NAGAR HAVELI",
+    "file_path": "data\\DADRA NAGAR HAVELI DAMAN DIU\\DADRA & NAGAR HAVELI.xlsx",
+    "size": 628275
+  },
+  {
+    "state": "MANIPUR",
+    "district": "IMPHAL WEST",
+    "file_path": "data\\MANIPUR\\IMPHAL WEST.xlsx",
+    "size": 649236
+  },
+  {
+    "state": "JAMMU AND KASHMIR",
+    "district": "SHUPIYAN",
+    "file_path": "data\\JAMMU AND KASHMIR\\SHUPIYAN.xlsx",
+    "size": 653526
+  },
+  {
+    "state": "NAGALAND",
+    "district": "LONGLENG",
+    "file_path": "data\\NAGALAND\\LONGLENG.xlsx",
+    "size": 734930
+  }
+]

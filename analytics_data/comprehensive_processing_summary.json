@@ -1,0 +1,41 @@
+{
+  "processing_date": "2025-05-22T06:58:26.850076",
+  "system_info": {
+    "cpu_cores": 64,
+    "total_ram_gb": 425.1144218444824,
+    "max_workers_used": 64,
+    "chunk_size": 100,
+    "max_grid_sample": 10000000
+  },
+  "dataset_info": {
+    "time_period": "2014-2023",
+    "frequency": "monthly",
+    "total_months": 120,
+    "total_grid_points": 6104147,
+    "total_sampled_points": 6104147,
+    "sampling_ratio": 1.0
+  },
+  "processing_results": {
+    "total_states": 36,
+    "total_districts": 726,
+    "total_files_attempted": 726,
+    "successful_files": 726,
+    "failed_files": 0,
+    "success_rate": "100.0%"
+  },
+  "data_quality": {
+    "avg_data_coverage": 99.98902947414612,
+    "avg_grid_points_per_district": 8407.915977961433,
+    "avg_sampled_points_per_district": 8407.915977961433
+  },
+  "analytics_generated": {
+    "time_series_analytics": 709,
+    "comprehensive_statistics": true,
+    "grid_data_preserved": true
+  },
+  "processing_time": "0:13:59.299083",
+  "performance_metrics": {
+    "files_per_minute": 51.90044945717742,
+    "total_processing_seconds": 839.299094
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "processing_date": "2025-05-22T09:45:29.716801",
+  "total_states": 36,
+  "total_districts": 726,
+  "name_mismatches": 0,
+  "analytics_generated": {
+    "time_series": 709,
+    "correlations": 34,
+    "clusters": 32,
+    "rankings": 120,
+    "extreme_events": 709
+  },
+  "processing_time": "0:08:22.900207",
+  "cpu_cores_used": 16
+}

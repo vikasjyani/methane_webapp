@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Methane Emissions Monitor - Enhanced</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/vector/KML.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet-canvas-layer@0.2.0/dist/leaflet-canvas-layer.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #212529;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .app-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .app-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .map-container {
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            padding: 10px;
+        }
+        
+        #map {
+            height: 70vh;
+            min-height: 500px;
+            border-radius: 12px;
+        }
+        
+        .controls-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+        }
+        
+        .breadcrumb-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .breadcrumb-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-nav .current {
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .analytics-container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-tabs {
+            background: rgba(0, 0, 0, 0.05);
+            border-bottom: none;
+            padding: 20px 20px 0;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #495057;
+            font-weight: 500;
+            border-radius: 12px 12px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content {
+            padding: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .legend {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+        
+        .text-primary { color: #667eea !important; }
+        .text-success { color: #28a745 !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-info { color: #17a2b8 !important; }
+        .text-warning { color: #ffc107 !important; }
+        
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 1.8rem;
+            }
+            
+            .controls-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                width: 100%;
+            }
+            
+            #map {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3" id="loading-text">Loading methane data...</p>
+        </div>
+    </div>
+
+    <div class="debug-panel" id="debug-panel" style="display: none;">
+        <div id="debug-content"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">🌍 India Methane Emissions Monitor</h1>
+            <p class="app-subtitle">Enhanced Analytics Platform (2014-2023) - Click on states to explore districts</p>
+        </header>
+        
+        <div class="breadcrumb-nav" id="breadcrumb-nav">
+            <span class="current">🇮🇳 India</span>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <div class="controls-panel">
+                <h6 class="mb-3"><i class="bi bi-calendar3"></i> Time Controls</h6>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label for="year-select" class="form-label small">Year</label>
+                        <select id="year-select" class="form-select form-select-sm">
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label for="month-select" class="form-label small">Month</label>
+                        <select id="month-select" class="form-select form-select-sm">
+                            <option value="1">Jan</option>
+                            <option value="2">Feb</option>
+                            <option value="3">Mar</option>
+                            <option value="4">Apr</option>
+                            <option value="5">May</option>
+                            <option value="6">Jun</option>
+                            <option value="7">Jul</option>
+                            <option value="8">Aug</option>
+                            <option value="9">Sep</option>
+                            <option value="10">Oct</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dec</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="methane-layer-toggle" checked>
+                    <label class="form-check-label" for="methane-layer-toggle">Methane Layer</label>
+                </div>
+                
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="debug-toggle">
+                    <label class="form-check-label" for="debug-toggle">Debug Mode</label>
+                </div>
+                
+                <button id="reset-view-btn" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset to India
+                </button>
+                
+                <hr class="my-3">
+                
+                <div class="text-center">
+                    <small class="text-muted">Level: <span id="current-level-display" class="fw-bold">India</span></small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <!-- <div class="stat-card">
+                <div class="stat-value text-primary" id="stat-average">--</div>
+                <div class="stat-label">Average (ppb)</div>
+            </div> -->
+            <div class="stat-card">
+                <div class="stat-value text-success" id="stat-min">--</div>
+                <div class="stat-label">Minimum (ppb)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value text-danger" id="stat-max">--</div>
+                <div class="stat-label">Maximum (ppb)</div>
+            </div>
+
+        </div>
+        
+        <div class="analytics-container">
+            <ul class="nav nav-tabs" id="analytics-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="bi bi-house"></i> Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button" role="tab">
+                        <i class="bi bi-trophy"></i> Rankings
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="analytics-tab-content">
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 id="overview-title">India Methane Emissions Overview</h5>
+                            <p id="overview-description">Click on any state to zoom in and see district-level data. Click on a district to see detailed grid-level methane measurements.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6>Top Emitting Regions</h6>
+                                <div id="top-regions-chart">
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-bar-chart-line" style="font-size: 3rem; color: #6c757d;"></i>
+                                        <p class="mt-2">Chart will load based on current view.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6>Current Period Analysis</h6>
+                                <div id="current-analysis">
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-bar-chart-steps" style="font-size: 3rem; color: #667eea;"></i>
+                                        <p class="mt-2">Analysis will be updated based on selected time period</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="ranking" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6><i class="bi bi-trophy"></i> State Rankings</h6>
+                                <div class="ranking-table">
+                                    <table class="table table-sm table-hover" id="state-ranking-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>State</th>
+                                                <th>Methane (ppb)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h6><i class="bi bi-award"></i> Top Districts</h6>
+                                <div class="ranking-table">
+                                    <table class="table table-sm table-hover" id="district-ranking-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>District</th>
+                                                <th>State</th>
+                                                <th>Methane (ppb)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let map, methaneLayer, currentLegend;
+        let currentLevel = 'india';
+        let currentState = null;
+        let currentDistrict = null;
+        let currentYear = null;
+        let currentMonth = new Date().getMonth() + 1;
+        let currentGeoJsonData = null;
+        let currentDataRange = { min: 1800, max: 2000 }; // Dynamic range
+        let debugMode = false;
+        const API_BASE_URL = '';
+
+        // Debug logging
+        function debugLog(message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            console.log(logMessage, data || '');
+            
+            if (debugMode) {
+                const debugContent = $('#debug-content');
+                debugContent.append(`<div>${logMessage}</div>`);
+                debugContent.scrollTop(debugContent[0].scrollHeight);
+            }
+        }
+
+        // Initialize the application
+        $(document).ready(function() {
+            debugLog('Initializing methane analytics application...');
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            setLoadingText('Initializing application...');
+            showLoading();
+            
+            initializeMap();
+            
+            loadMetadata()
+                .then(metadata => {
+                    debugLog('Metadata loaded', metadata);
+                    
+                    // Populate year dropdown
+                    const yearSelect = $('#year-select');
+                    yearSelect.empty();
+                    if (metadata.years && metadata.years.length > 0) {
+                        metadata.years.sort((a,b) => b-a).forEach(year => {
+                            yearSelect.append(`<option value="${year}">${year}</option>`);
+                        });
+                        currentYear = metadata.max_year || metadata.years[0];
+                        yearSelect.val(currentYear);
+                    } else {
+                        debugLog('No years found in metadata', metadata);
+                        currentYear = 2023; // Default
+                        yearSelect.append(`<option value="${currentYear}">${currentYear}</option>`);
+                    }
+                    
+                    $('#month-select').val(currentMonth);
+                    
+                    setupEventListeners();
+                    return loadIndiaView();
+                })
+                .then(() => {
+                    hideLoading();
+                    debugLog('Application initialized successfully');
+                })
+                .catch(error => {
+                    debugLog('Failed to initialize application', error);
+                    showError('Failed to initialize application: ' + error.message);
+                    hideLoading();
+                });
+        }
+        
+        function initializeMap() {
+            debugLog('Initializing map...');
+            map = L.map('map', {
+                center: [22.5937, 78.9629],
+                zoom: 5,
+                minZoom: 4,
+                maxZoom: 18
+            });
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+            
+            addLegend();
+            debugLog('Map initialized successfully');
+        }
+        
+        function addLegend() {
+            if (currentLegend) {
+                map.removeControl(currentLegend);
+            }
+            
+            currentLegend = L.control({position: 'bottomright'});
+            currentLegend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'legend');
+                updateLegendContent(div);
+                return div;
+            };
+            currentLegend.addTo(map);
+        }
+        
+        function updateLegendContent(legendDiv) {
+            const min = currentDataRange.min;
+            const max = currentDataRange.max;
+            const range = max - min;
+            
+            // Green to Red color scheme (reverse of previous)
+            const colors = ['#00ff00', '#40ff00', '#80ff00', '#bfff00', '#ffff00', '#ff8000', '#ff4000', '#ff0000'];
+            const labels = [];
+            
+            for (let i = 0; i < colors.length; i++) {
+                const value = min + (range * i / (colors.length - 1));
+                labels.push(
+                    `<div class="legend-item">
+                        <div class="legend-color" style="background: ${colors[i]};"></div>
+                        ${value.toFixed(0)}
+                    </div>`
+                );
+            }
+            
+            legendDiv.innerHTML = `
+                <h6 style="margin-bottom: 10px;"><i class="bi bi-palette"></i> Methane (ppb)</h6>
+                <div style="font-size: 11px;">
+                    <div style="color: #00ff00; font-weight: bold;">Low: ${min.toFixed(0)}</div>
+                    ${labels.slice(1, -1).join('')}
+                    <div style="color: #ff0000; font-weight: bold;">High: ${max.toFixed(0)}</div>
+                </div>
+            `;
+        }
+
+        function getColorForValue(value, min, max) {
+            // Green to Red color scheme
+            const colors = ['#00ff00', '#40ff00', '#80ff00', '#bfff00', '#ffff00', '#ff8000', '#ff4000', '#ff0000'];
+            
+            if (value === null || value === undefined || isNaN(value) || value <= 0) {
+                return '#cccccc'; // Gray for missing/zero data
+            }
+            
+            if (max === min) {
+                return colors[0]; // Default to green if no range
+            }
+
+            const range = max - min;
+            const normalizedValue = (value - min) / range;
+            const colorIndex = Math.min(Math.floor(normalizedValue * (colors.length - 1)), colors.length - 1);
+            
+            return colors[colorIndex];
+        }
+        
+        async function fetchData(endpoint, loadingMsg = "Loading data...") {
+            setLoadingText(loadingMsg);
+            showLoading();
+            try {
+                debugLog(`Fetching: ${API_BASE_URL + endpoint}`);
+                const response = await fetch(API_BASE_URL + endpoint);
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                debugLog(`Data received for ${endpoint}`, {
+                    hasGeojson: !!data.geojson,
+                    hasStats: !!data.stats,
+                    geojsonFeatures: data.geojson ? data.geojson.features?.length : 0
+                });
+                
+                return data;
+            } catch (error) {
+                debugLog(`Error fetching ${endpoint}`, error);
+                showError(`Failed to load data: ${error.message}`);
+                throw error;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function loadMetadata() {
+            debugLog('Loading metadata...');
+            return fetchData('/api/metadata', 'Loading application metadata...');
+        }
+        
+        function setupEventListeners() {
+            debugLog('Setting up event listeners...');
+            
+            $('#year-select, #month-select').change(function() {
+                currentYear = parseInt($('#year-select').val());
+                currentMonth = parseInt($('#month-select').val());
+                debugLog(`Time changed to: ${currentYear}-${currentMonth}`);
+                updateCurrentView();
+            });
+            
+            $('#methane-layer-toggle').change(function() {
+                debugLog('Methane layer toggled', $(this).is(':checked'));
+                updateMapLayers();
+            });
+            
+            $('#debug-toggle').change(function() {
+                debugMode = $(this).is(':checked');
+                $('#debug-panel').toggle(debugMode);
+                debugLog('Debug mode toggled', debugMode);
+            });
+            
+            $('#reset-view-btn').click(function() {
+                resetToIndiaView();
+            });
+            
+            $('#analytics-tabs button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                const targetTab = $(e.target).attr('id');
+                debugLog(`Switched to tab: ${targetTab}`);
+                if (targetTab === 'ranking-tab') {
+                    loadRankingAnalysis();
+                }
+            });
+            
+            debugLog('Event listeners set up successfully');
+        }
+        
+        async function loadIndiaView() {
+            debugLog(`Loading India view for ${currentYear}-${currentMonth}...`);
+            currentLevel = 'india';
+            currentState = null;
+            currentDistrict = null;
+            updateBreadcrumb();
+            updateCurrentLevelDisplay();
+
+            try {
+                const data = await fetchData(`/api/india/${currentYear}/${currentMonth}`, `Loading India data for ${$('#month-select option:selected').text()} ${currentYear}...`);
+                
+                currentGeoJsonData = data.geojson;
+                
+                // Update data range for legend
+                if (data.stats && data.stats.data_min && data.stats.data_max) {
+                    currentDataRange = {
+                        min: data.stats.data_min,
+                        max: data.stats.data_max
+                    };
+                }
+                
+                debugLog('India GeoJSON data received', {
+                    features: currentGeoJsonData?.features?.length,
+                    dataRange: currentDataRange,
+                    firstFeature: currentGeoJsonData?.features?.[0]
+                });
+                
+                updateMapLayers();
+                updateStatistics(data.stats);
+                updateOverviewPanel(data);
+                updateLegendContent(currentLegend.getContainer().querySelector('.legend'));
+                debugLog('India view loaded successfully');
+            } catch (error) {
+                debugLog('Failed to load India view', error);
+            }
+        }
+        
+        async function loadStateView(stateName) {
+            debugLog(`Loading state view for: ${stateName}, ${currentYear}-${currentMonth}...`);
+            currentLevel = 'state';
+            currentState = stateName;
+            currentDistrict = null;
+            updateBreadcrumb();
+            updateCurrentLevelDisplay();
+
+            try {
+                const data = await fetchData(`/api/state/${stateName}/${currentYear}/${currentMonth}`, `Loading ${stateName} data for ${$('#month-select option:selected').text()} ${currentYear}...`);
+                
+                currentGeoJsonData = data.geojson;
+                
+                // Update data range for legend
+                if (data.stats && data.stats.data_min && data.stats.data_max) {
+                    currentDataRange = {
+                        min: data.stats.data_min,
+                        max: data.stats.data_max
+                    };
+                }
+                
+                debugLog('State GeoJSON data received', {
+                    features: currentGeoJsonData?.features?.length,
+                    dataRange: currentDataRange,
+                    firstFeature: currentGeoJsonData?.features?.[0]
+                });
+                
+                updateMapLayers();
+                updateStatistics(data.stats);
+                updateOverviewPanel(data);
+                updateLegendContent(currentLegend.getContainer().querySelector('.legend'));
+                debugLog('State view loaded successfully');
+            } catch (error) {
+                debugLog(`Failed to load state view for ${stateName}`, error);
+            }
+        }
+        
+        async function loadDistrictView(stateName, districtName) {
+            debugLog(`Loading district view for: ${districtName}, ${stateName}, ${currentYear}-${currentMonth}...`);
+            currentLevel = 'district';
+            currentDistrict = districtName;
+            updateBreadcrumb();
+            updateCurrentLevelDisplay();
+            
+            try {
+                const data = await fetchData(`/api/district/${stateName}/${districtName}/${currentYear}/${currentMonth}`, `Loading ${districtName} data for ${$('#month-select option:selected').text()} ${currentYear}...`);
+                
+                // Update data range for legend
+                if (data.stats && data.stats.data_min && data.stats.data_max) {
+                    currentDataRange = {
+                        min: data.stats.data_min,
+                        max: data.stats.data_max
+                    };
+                }
+                
+                // Store contour data
+                currentGeoJsonData = data;
+                
+                debugLog('District contour data received', {
+                    type: data.type,
+                    points: data.points?.length,
+                    dataRange: currentDataRange,
+                    bounds: data.bounds
+                });
+                
+                updateMapLayers();
+                updateStatistics(data.stats);
+                updateOverviewPanel(data);
+                updateLegendContent(currentLegend.getContainer().querySelector('.legend'));
+                debugLog('District view loaded successfully');
+            } catch (error) {
+                debugLog(`Failed to load district view for ${districtName}`, error);
+            }
+        }
+
+        function updateMapLayers() {
+            debugLog('Updating map layers for level:', currentLevel);
+            
+            if (methaneLayer) {
+                map.removeLayer(methaneLayer);
+                methaneLayer = null;
+            }
+
+            if (!currentGeoJsonData || !$('#methane-layer-toggle').is(':checked')) {
+                debugLog('No data to display or layer toggled off');
+                return;
+            }
+
+            if (currentLevel === 'district') {
+                debugLog('Creating contour map for district level');
+                
+                if (currentGeoJsonData.type && (currentGeoJsonData.type === 'contour' || currentGeoJsonData.type === 'interpolated_contour')) {
+                    // Create interpolated contour surface
+                    createContourLayer(currentGeoJsonData);
+                }
+            } else {
+                debugLog('Creating choropleth map for', currentLevel, 'level');
+                
+                // Extract values for min/max calculation (excluding zeros)
+                const values = currentGeoJsonData.features
+                    .map(f => f.properties.methane_ppb)
+                    .filter(v => v !== null && !isNaN(v) && v > 0);
+                    
+                const minVal = values.length > 0 ? Math.min(...values) : currentDataRange.min;
+                const maxVal = values.length > 0 ? Math.max(...values) : currentDataRange.max;
+                
+                debugLog('Value range:', { min: minVal, max: maxVal, count: values.length });
+
+                methaneLayer = L.geoJSON(currentGeoJsonData, {
+                    style: function(feature) {
+                        const methane = feature.properties.methane_ppb;
+                        return {
+                            fillColor: getColorForValue(methane, minVal, maxVal),
+                            weight: 1,
+                            opacity: 1,
+                            color: 'white',
+                            fillOpacity: 0.8
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        const regionName = props.STATE || props.District_1 || 'Unknown Region';
+                        const methaneValue = props.methane_ppb !== null && props.methane_ppb !== undefined && props.methane_ppb > 0 ? 
+                            props.methane_ppb.toFixed(2) + ' ppb' : 'No data';
+                        
+                        layer.bindPopup(`
+                            <div style="text-align: center;">
+                                <h6>${regionName}</h6>
+                                <p>Methane: <strong>${methaneValue}</strong></p>
+                                <small>Click to zoom</small>
+                            </div>
+                        `);
+                        
+                        layer.on({
+                            mouseover: function(e) {
+                                const l = e.target;
+                                l.setStyle({ weight: 3, color: '#666', fillOpacity: 0.9 });
+                                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                                    l.bringToFront();
+                                }
+                            },
+                            mouseout: function(e) {
+                                methaneLayer.resetStyle(e.target);
+                            },
+                            click: function(e) {
+                                map.closePopup();
+                                if (currentLevel === 'india') {
+                                    loadStateView(props.STATE);
+                                } else if (currentLevel === 'state') {
+                                    loadDistrictView(props.STATE, props.District_1);
+                                }
+                            }
+                        });
+                    }
+                }).addTo(map);
+                
+                if (methaneLayer.getBounds().isValid()) {
+                    map.fitBounds(methaneLayer.getBounds(), {padding: [20, 20]});
+                }
+            }
+            debugLog('Map layers updated successfully');
+        }
+        
+        function createContourLayer(data) {
+            debugLog('Creating contour layer with data type:', data.type);
+            
+            if (data.type === 'interpolated_contour' && data.interpolated_grid) {
+                // Use server-side interpolated grid
+                createInterpolatedContourLayer(data);
+            } else if (data.points) {
+                // Use client-side interpolation
+                createClientSideContourLayer(data.points, data.bounds);
+            }
+        }
+        
+        function createInterpolatedContourLayer(data) {
+            const grid = data.interpolated_grid.grid;
+            const latRange = data.interpolated_grid.lat_range;
+            const lonRange = data.interpolated_grid.lon_range;
+            
+            debugLog('Using server-side interpolated grid:', {
+                gridSize: `${grid.length}x${grid[0].length}`,
+                valueRange: data.interpolated_grid.value_range
+            });
+            
+            // Create heat layer from interpolated grid
+            const heatPoints = [];
+            for (let i = 0; i < grid.length; i++) {
+                for (let j = 0; j < grid[i].length; j++) {
+                    const value = grid[i][j];
+                    if (value && !isNaN(value) && value > 0) {
+                        heatPoints.push([latRange[i], lonRange[j], value]);
+                    }
+                }
+            }
+            
+            if (heatPoints.length > 0) {
+                methaneLayer = L.heatLayer(heatPoints, {
+                    radius: 15,
+                    blur: 10,
+                    maxZoom: 18,
+                    gradient: {
+                        0.0: '#00ff00',  // Green for low values
+                        0.2: '#40ff00',
+                        0.4: '#80ff00',
+                        0.5: '#bfff00',
+                        0.6: '#ffff00',
+                        0.7: '#ff8000',
+                        0.8: '#ff4000',
+                        1.0: '#ff0000'   // Red for high values
+                    }
+                }).addTo(map);
+                
+                // Add original measurement points
+                addMeasurementPoints(data.original_points);
+                
+                // Fit to bounds
+                const bounds = data.bounds;
+                map.fitBounds([
+                    [bounds.min_lat, bounds.min_lon],
+                    [bounds.max_lat, bounds.max_lon]
+                ], {padding: [20, 20]});
+            }
+        }
+        
+        function createClientSideContourLayer(points, bounds) {
+            debugLog('Using client-side interpolation with', points.length, 'points');
+            
+            // Create a grid of interpolated values
+            const gridSize = 30; // Reduced for better performance
+            const latStep = (bounds.max_lat - bounds.min_lat) / gridSize;
+            const lonStep = (bounds.max_lon - bounds.min_lon) / gridSize;
+            
+            // Simple IDW interpolation for contour
+            const contourPoints = [];
+            
+            for (let i = 0; i <= gridSize; i++) {
+                for (let j = 0; j <= gridSize; j++) {
+                    const lat = bounds.min_lat + (i * latStep);
+                    const lon = bounds.min_lon + (j * lonStep);
+                    
+                    // Interpolate value using Inverse Distance Weighting
+                    let weightedSum = 0;
+                    let totalWeight = 0;
+                    
+                    for (const point of points) {
+                        const distance = Math.sqrt(
+                            Math.pow(lat - point[0], 2) + Math.pow(lon - point[1], 2)
+                        );
+                        
+                        if (distance < 0.001) { // Very close point
+                            weightedSum = point[2];
+                            totalWeight = 1;
+                            break;
+                        }
+                        
+                        const weight = 1 / Math.pow(distance, 2);
+                        weightedSum += weight * point[2];
+                        totalWeight += weight;
+                    }
+                    
+                    const interpolatedValue = totalWeight > 0 ? weightedSum / totalWeight : 0;
+                    if (interpolatedValue > 0) {
+                        contourPoints.push([lat, lon, interpolatedValue]);
+                    }
+                }
+            }
+            
+            debugLog('Generated', contourPoints.length, 'interpolated points');
+            
+            // Create heat map with interpolated points
+            if (contourPoints.length > 0) {
+                methaneLayer = L.heatLayer(contourPoints, {
+                    radius: 20,
+                    blur: 15,
+                    maxZoom: 18,
+                    gradient: {
+                        0.0: '#00ff00',  // Green for low values
+                        0.2: '#40ff00',
+                        0.4: '#80ff00',
+                        0.5: '#bfff00',
+                        0.6: '#ffff00',
+                        0.7: '#ff8000',
+                        0.8: '#ff4000',
+                        1.0: '#ff0000'   // Red for high values
+                    }
+                }).addTo(map);
+                
+                // Add original measurement points
+                addMeasurementPoints(points);
+                
+                // Fit bounds to the contour area
+                const contourBounds = [
+                    [bounds.min_lat, bounds.min_lon],
+                    [bounds.max_lat, bounds.max_lon]
+                ];
+                map.fitBounds(contourBounds, {padding: [20, 20]});
+            }
+        }
+        
+        function addMeasurementPoints(points) {
+            // Add original points as small circles for reference
+            const pointLayer = L.layerGroup();
+            points.forEach(point => {
+                const [lat, lon, value] = point;
+                const color = getColorForValue(value, currentDataRange.min, currentDataRange.max);
+                
+                const circle = L.circleMarker([lat, lon], {
+                    radius: 3,
+                    fillColor: color,
+                    color: 'white',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).bindPopup(`
+                    <div style="text-align: center;">
+                        <h6>Measurement Point</h6>
+                        <p>Methane: <strong>${value.toFixed(2)} ppb</strong></p>
+                        <p>Location: ${lat.toFixed(4)}, ${lon.toFixed(4)}</p>
+                    </div>
+                `);
+                
+                pointLayer.addLayer(circle);
+            });
+            
+            pointLayer.addTo(map);
+        }
+        
+        function updateStatistics(stats) {
+            debugLog('Updating statistics:', stats);
+            if (!stats) {
+                $('#stat-average, #stat-min, #stat-max, #stat-median, #stat-std').text('--');
+                return;
+            }
+            $('#stat-average').text(stats.mean !== null && stats.mean !== undefined ? stats.mean.toFixed(2) : '--');
+            $('#stat-min').text(stats.min !== null && stats.min !== undefined ? stats.min.toFixed(2) : '--');
+            $('#stat-max').text(stats.max !== null && stats.max !== undefined ? stats.max.toFixed(2) : '--');
+            $('#stat-median').text(stats.median !== null && stats.median !== undefined ? stats.median.toFixed(2) : '--');
+            $('#stat-std').text(stats.std !== null && stats.std !== undefined ? stats.std.toFixed(2) : '--');
+        }
+        
+        function updateOverviewPanel(data) {
+            let title = '';
+            let description = '';
+            
+            if (currentLevel === 'india') {
+                title = `India Methane Emissions Overview (${$('#month-select option:selected').text()} ${currentYear})`;
+                description = 'Displaying average methane emissions for all states. Click on a state to explore its districts.';
+                if (data.top_states && data.top_states.length > 0) {
+                    updateTopRegionsChart(data.top_states, 'Top 5 Emitting States');
+                } else {
+                    $('#top-regions-chart').html('<div class="alert alert-info">No state ranking data available for this period.</div>');
+                }
+            } else if (currentLevel === 'state') {
+                title = `${currentState} - District Emissions (${$('#month-select option:selected').text()} ${currentYear})`;
+                description = `Displaying average methane emissions for districts in ${currentState}. Click a district for detailed grid data.`;
+                if (data.top_districts && data.top_districts.length > 0) {
+                    updateTopRegionsChart(data.top_districts, `Top 5 Emitting Districts in ${currentState}`);
+                } else {
+                    $('#top-regions-chart').html('<div class="alert alert-info">No district ranking data available for this period.</div>');
+                }
+            } else if (currentLevel === 'district') {
+                title = `${currentDistrict}, ${currentState} - Grid View (${$('#month-select option:selected').text()} ${currentYear})`;
+                description = `Displaying detailed methane measurements for ${currentDistrict}. ${data.stats && data.stats.count ? data.stats.count + ' grid points shown.' : ''}`;
+                $('#top-regions-chart').html('<div class="alert alert-info">Detailed grid view. No regional ranking at this level.</div>');
+            }
+            
+            $('#overview-title').text(title);
+            $('#overview-description').text(description);
+            
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            $('#current-analysis').html(`
+                <div class="text-center">
+                    <h3 class="text-primary">${currentYear}</h3>
+                    <p class="h5">${monthNames[currentMonth - 1]}</p>
+                    <hr>
+                    <p><strong>Level:</strong> ${currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1)}</p>
+                    ${currentState ? `<p><strong>State:</strong> ${currentState}</p>` : ''}
+                    ${currentDistrict ? `<p><strong>District:</strong> ${currentDistrict}</p>` : ''}
+                </div>
+            `);
+        }
+
+        function updateTopRegionsChart(regionsData, chartTitle) {
+            if (!regionsData || regionsData.length === 0) {
+                $('#top-regions-chart').html(`<div class="alert alert-info">No data for ${chartTitle}.</div>`);
+                return;
+            }
+            
+            const trace = {
+                x: regionsData.map(d => d.name),
+                y: regionsData.map(d => d.methane_ppb),
+                type: 'bar',
+                marker: { color: '#667eea' }
+            };
+            
+            Plotly.newPlot('top-regions-chart', [trace], {
+                title: { text: chartTitle, font: {size: 14}},
+                xaxis: { title: 'Region', automargin: true },
+                yaxis: { title: 'Methane (ppb)', automargin: true },
+                margin: { t: 40, l: 60, r: 20, b: 100 }
+            }, {responsive: true});
+        }
+        
+        function updateBreadcrumb() {
+            const breadcrumb = $('#breadcrumb-nav');
+            breadcrumb.empty();
+            let html = '<a href="#" onclick="resetToIndiaView(event)">🇮🇳 India</a>';
+            if (currentLevel === 'state') {
+                html += ` > <span class="current">🏛️ ${currentState}</span>`;
+            } else if (currentLevel === 'district') {
+                html += ` > <a href="#" onclick="loadStateViewWrapper(event, '${currentState}')">🏛️ ${currentState}</a> > <span class="current">🏘️ ${currentDistrict}</span>`;
+            } else {
+                html = '<span class="current">🇮🇳 India</span>';
+            }
+            breadcrumb.html(html);
+        }
+
+        function resetToIndiaView(event) {
+            if(event) event.preventDefault();
+            debugLog('Resetting to India view');
+            loadIndiaView();
+        }
+        
+        function loadStateViewWrapper(event, stateName) {
+            if(event) event.preventDefault();
+            loadStateView(stateName);
+        }
+
+        function updateCurrentLevelDisplay() {
+            let levelText = currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1);
+            $('#current-level-display').text(levelText);
+        }
+        
+        function updateCurrentView() {
+            debugLog(`Updating current view for level: ${currentLevel}, Year: ${currentYear}, Month: ${currentMonth}`);
+            if (currentLevel === 'india') {
+                loadIndiaView();
+            } else if (currentLevel === 'state' && currentState) {
+                loadStateView(currentState);
+            } else if (currentLevel === 'district' && currentState && currentDistrict) {
+                loadDistrictView(currentState, currentDistrict);
+            }
+        }
+        
+        async function loadRankingAnalysis() {
+            try {
+                const data = await fetchData(`/api/analytics/ranking/${currentYear}/${currentMonth}`, 'Loading ranking data...');
+                
+                // Update state rankings
+                const stateTableBody = $('#state-ranking-table tbody').empty();
+                if (data.state_rankings && data.state_rankings.length > 0) {
+                    data.state_rankings.forEach((state, index) => {
+                        const rankClass = index < 3 ? `rank-${index + 1}` : 'rank-other';
+                        stateTableBody.append(`
+                            <tr>
+                                <td><span class="badge bg-primary">${state.rank}</span></td>
+                                <td>${state.state}</td>
+                                <td>${state.methane_ppb.toFixed(2)}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    stateTableBody.append('<tr><td colspan="3" class="text-center">No data available</td></tr>');
+                }
+                
+                // Update district rankings
+                const districtTableBody = $('#district-ranking-table tbody').empty();
+                if (data.district_rankings && data.district_rankings.length > 0) {
+                    data.district_rankings.forEach((district, index) => {
+                        const rankClass = index < 3 ? `rank-${index + 1}` : 'rank-other';
+                        districtTableBody.append(`
+                            <tr>
+                                <td><span class="badge bg-primary">${district.rank}</span></td>
+                                <td>${district.district}</td>
+                                <td>${district.state}</td>
+                                <td>${district.methane_ppb.toFixed(2)}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    districtTableBody.append('<tr><td colspan="4" class="text-center">No data available</td></tr>');
+                }
+                
+            } catch (error) {
+                $('#state-ranking-table tbody').html('<tr><td colspan="3" class="text-center text-danger">Error loading rankings</td></tr>');
+                $('#district-ranking-table tbody').html('<tr><td colspan="4" class="text-center text-danger">Error loading rankings</td></tr>');
+            }
+        }
+        
+        // Utility functions
+        function setLoadingText(text) { $('#loading-text').text(text); }
+        function showLoading() { $('#loading-overlay').fadeIn(100); }
+        function hideLoading() { $('#loading-overlay').fadeOut(100); }
+        
+        function showError(message) {
+            debugLog('Application Error:', message);
+            const errorId = `error-${Date.now()}`;
+            const alertHtml = `
+                <div id="${errorId}" class="alert alert-danger alert-dismissible fade show m-3 position-fixed top-0 end-0" style="z-index: 10000;" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            $('body').append(alertHtml);
+            setTimeout(() => { $(`#${errorId}`).alert('close'); }, 7000);
+        }
+    </script>
+</body>
+</html>
